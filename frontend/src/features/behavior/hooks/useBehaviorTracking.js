@@ -5,6 +5,7 @@ import { BEHAVIOR_CONFIG } from '@/shared/constants'
 export function useBehaviorTracking() {
   const [predictionId, setPredictionId] = useState(null)
   const [clicks, setClicks] = useState(0)
+  const clicksRef = useRef(0)
   const startTimeRef = useRef(null)
   const isTrackingRef = useRef(false)
   const sentRef = useRef(false)
@@ -14,6 +15,7 @@ export function useBehaviorTracking() {
     
     setPredictionId(id)
     setClicks(0)
+    clicksRef.current = 0
     startTimeRef.current = Date.now()
     isTrackingRef.current = true
     sentRef.current = false
@@ -21,6 +23,7 @@ export function useBehaviorTracking() {
 
   const trackClick = useCallback(() => {
     if (isTrackingRef.current) {
+      clicksRef.current += 1
       setClicks((prev) => prev + 1)
     }
   }, [])
@@ -43,14 +46,14 @@ export function useBehaviorTracking() {
       predictionService.trackBehavior({
         predictionId,
         timeSpent,
-        clicks,
+        clicks: clicksRef.current,
       }).catch(() => {
         // Silently fail - behavior tracking should not affect UX
       })
     } catch (error) {
       // Silently fail
     }
-  }, [predictionId, clicks])
+  }, [predictionId])
 
   const stopTracking = useCallback(() => {
     if (isTrackingRef.current && !sentRef.current) {
@@ -59,6 +62,7 @@ export function useBehaviorTracking() {
     isTrackingRef.current = false
     setPredictionId(null)
     setClicks(0)
+    clicksRef.current = 0
     startTimeRef.current = null
   }, [sendBehavior])
 
@@ -97,7 +101,7 @@ export function useBehaviorTracking() {
     }, BEHAVIOR_CONFIG.IDLE_TIMEOUT)
 
     return () => clearTimeout(idleTimeout)
-  }, [predictionId, clicks, sendBehavior])
+  }, [predictionId, sendBehavior])
 
   return {
     startTracking,

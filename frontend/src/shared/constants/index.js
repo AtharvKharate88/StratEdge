@@ -15,6 +15,10 @@ export const API_ENDPOINTS = {
   // Player Analytics
   PLAYER_IMPACT: '/player-impact',
   PLAYER_BATTLE: '/player-battle',
+  TEAM_SQUAD: '/team-squad',
+
+  // Dashboard
+  DASHBOARD_METRICS: '/dashboard-metrics',
   
   // Venue
   VENUE_INSIGHT: '/venue-insight',

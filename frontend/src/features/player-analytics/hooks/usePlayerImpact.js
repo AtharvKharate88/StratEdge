@@ -1,11 +1,10 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { playerService } from '@/shared/services/api'
 import { useToast } from '@/shared/hooks/useToast'
 
-// Cache
 let impactCache = null
 let cacheTimestamp = 0
-const CACHE_DURATION = 300000 // 5 minutes
+const CACHE_DURATION = 300000
 
 export function usePlayerImpact(top = 10) {
   const [players, setPlayers] = useState(impactCache?.data || [])
@@ -13,6 +12,8 @@ export function usePlayerImpact(top = 10) {
   const [isLoading, setIsLoading] = useState(!impactCache)
   const [error, setError] = useState(null)
   const { toast } = useToast()
+  const toastRef = useRef(toast)
+  toastRef.current = toast
 
   const fetchImpact = useCallback(async (forceRefresh = false) => {
     if (!forceRefresh && impactCache && Date.now() - cacheTimestamp < CACHE_DURATION) {
@@ -28,16 +29,16 @@ export function usePlayerImpact(top = 10) {
     try {
       const response = await playerService.getImpactLeaderboard(top)
       if (response.data.success) {
-        const { data, count } = response.data
-        impactCache = { data, count }
+        const { data, count: c } = response.data
+        impactCache = { data, count: c }
         cacheTimestamp = Date.now()
         setPlayers(data)
-        setCount(count)
+        setCount(c)
       }
     } catch (err) {
       const message = err.response?.data?.message || 'Failed to load player impact data'
       setError(message)
-      toast({
+      toastRef.current({
         title: 'Error',
         description: message,
         variant: 'error',
@@ -45,7 +46,7 @@ export function usePlayerImpact(top = 10) {
     } finally {
       setIsLoading(false)
     }
-  }, [top, toast])
+  }, [top])
 
   useEffect(() => {
     fetchImpact()

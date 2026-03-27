@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import Card from '@/shared/components/Card.jsx'
 import Button from '@/shared/components/Button.jsx'
 import Select from '@/shared/components/Select.jsx'
-import { CRICKET_TEAMS, POPULAR_VENUES, POPULAR_BATTERS, POPULAR_BOWLERS, getTeamLogo } from '@/shared/constants'
+import { CRICKET_TEAMS, POPULAR_VENUES, getTeamLogo } from '@/shared/constants'
+import { useTeamSquad } from '../hooks/useTeamSquad.js'
 import { Zap, ChevronDown, ChevronUp, Users, MapPin, Swords } from 'lucide-react'
 
 export default function PredictionForm({
@@ -10,8 +11,6 @@ export default function PredictionForm({
   isLoading,
   selectedTeam = '',
   onTeamChange,
-  batterOptions = POPULAR_BATTERS,
-  bowlerOptions = POPULAR_BOWLERS,
 }) {
   const [teamA, setTeamA] = useState(selectedTeam || '')
   const [teamB, setTeamB] = useState('')
@@ -33,6 +32,19 @@ export default function PredictionForm({
   const [batter, setBatter] = useState('')
   const [bowler, setBowler] = useState('')
   const [errors, setErrors] = useState({})
+
+  const { players: batterOptions, season: batterSeason, isLoading: squadALoading } =
+    useTeamSquad(teamA, 'batter')
+  const { players: bowlerOptions, season: bowlerSeason, isLoading: squadBLoading } =
+    useTeamSquad(teamB, 'bowler')
+
+  useEffect(() => {
+    setBatter('')
+  }, [teamA])
+
+  useEffect(() => {
+    setBowler('')
+  }, [teamB])
 
   const validate = () => {
     const newErrors = {}
@@ -136,33 +148,47 @@ export default function PredictionForm({
               />
             </div>
 
-            {/* Player Battle */}
+            {/* Player Battle — batters from Team A XI, bowlers from Team B XI (current season window) */}
             <div>
               <h4 className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
                 <Swords className="w-4 h-4 text-primary" />
                 Player Battle (Optional)
               </h4>
+              <p className="text-xs text-muted-foreground mb-3">
+                Batters from Team A and bowlers from Team B (top 11 in the latest match window from
+                data). Select both teams above first.
+              </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs text-muted-foreground mb-2">Batter</label>
+                  <label className="block text-xs text-muted-foreground mb-2">
+                    Batter (Team A)
+                    {batterSeason?.matchCount != null && (
+                      <span className="text-[10px]"> · {batterSeason.matchCount} matches in window</span>
+                    )}
+                  </label>
                   <Select
                     value={batter}
                     onChange={setBatter}
                     options={batterOptions}
-                    placeholder="Select batter"
+                    placeholder={teamA ? 'Select batter from Team A' : 'Select Team A first'}
                     searchable
-                    disabled={isLoading}
+                    disabled={isLoading || !teamA || squadALoading}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-muted-foreground mb-2">Bowler</label>
+                  <label className="block text-xs text-muted-foreground mb-2">
+                    Bowler (Team B)
+                    {bowlerSeason?.matchCount != null && (
+                      <span className="text-[10px]"> · {bowlerSeason.matchCount} matches in window</span>
+                    )}
+                  </label>
                   <Select
                     value={bowler}
                     onChange={setBowler}
                     options={bowlerOptions}
-                    placeholder="Select bowler"
+                    placeholder={teamB ? 'Select bowler from Team B' : 'Select Team B first'}
                     searchable
-                    disabled={isLoading}
+                    disabled={isLoading || !teamB || squadBLoading}
                   />
                 </div>
               </div>

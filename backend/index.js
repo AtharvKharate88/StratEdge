@@ -18,6 +18,12 @@ const fs = require("fs");
 const path = require("path");
 dotenv.config();
 
+process.on("unhandledRejection", (reason) => {
+  logger.error("unhandledRejection", {
+    detail: reason instanceof Error ? reason.message : String(reason),
+  });
+});
+
 const explanationRoutes = require("./routes/explanationRoutes");
 connectDB();
 

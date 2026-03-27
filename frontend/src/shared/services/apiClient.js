@@ -36,7 +36,17 @@ apiClient.interceptors.response.use(
       serverMessage ||
       (isNetworkError ? 'Unable to reach server. Please try again.' : 'Request failed.')
 
-    if (status === 401 && !AUTH_FREE_PATHS.includes(window.location.pathname)) {
+    const requestUrl = String(error.config?.url || '')
+    const isAuthRouteRequest =
+      requestUrl.includes('/login') ||
+      requestUrl.includes('/signup') ||
+      requestUrl.includes('/refresh')
+
+    if (
+      status === 401 &&
+      !isAuthRouteRequest &&
+      !AUTH_FREE_PATHS.includes(window.location.pathname)
+    ) {
       localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN)
       localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
       localStorage.removeItem(STORAGE_KEYS.USER_ID)

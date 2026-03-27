@@ -79,6 +79,10 @@ export default function Login() {
           </div>
           <h1 className="text-3xl font-bold text-foreground">CricketAI</h1>
           <p className="text-muted-foreground mt-2">Sign in to your account</p>
+          <p className="text-sm text-muted-foreground mt-3 max-w-sm mx-auto">
+            After login, start on Match predictions: choose two teams and get win odds, stats, and optional
+            venue and player matchup from real IPL-style data.
+          </p>
         </div>
 
         {/* Login Form */}

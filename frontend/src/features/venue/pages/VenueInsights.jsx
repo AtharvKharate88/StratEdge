@@ -10,7 +10,7 @@ import { POPULAR_VENUES } from '@/shared/constants'
 import { MapPin, Search, TrendingUp, Activity, BarChart3 } from 'lucide-react'
 
 export default function VenueInsights() {
-  const { insight, isLoading, fetchInsight, reset } = useVenueInsight()
+  const { insight, isLoading, fetchInsight, reset, error, availableVenues } = useVenueInsight()
   const [selectedVenue, setSelectedVenue] = useState('')
 
   const handleSearch = () => {
@@ -50,9 +50,11 @@ export default function VenueInsights() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Venue Insights</h1>
-        <p className="text-muted-foreground mt-1">
-          Explore venue statistics and conditions
+        <h1 className="text-3xl font-bold text-foreground">Venues</h1>
+        <p className="text-muted-foreground mt-1 max-w-2xl">
+          Look up a ground for typical first-innings scores, how many games the stats are from, and a
+          broad pitch tag. Pair this with a prediction when you selected the same venue under Advanced
+          options.
         </p>
       </div>
 
@@ -98,6 +100,30 @@ export default function VenueInsights() {
           <SkeletonCard />
           <SkeletonCard />
         </div>
+      )}
+
+      {/* Backend 404: show sample venue names the API knows about */}
+      {!isLoading && !insight && error && availableVenues.length > 0 && (
+        <Card className="border-dashed border-amber-500/40 bg-amber-500/5">
+          <CardContent className="py-4">
+            <p className="text-sm text-foreground mb-2">Venue name did not match. Try one of these (from the server list):</p>
+            <div className="flex flex-wrap gap-2">
+              {availableVenues.map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => {
+                    setSelectedVenue(v)
+                    fetchInsight(v)
+                  }}
+                  className="text-xs px-2 py-1 rounded-md bg-secondary hover:bg-secondary/80 text-primary"
+                >
+                  {v}
+                </button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Venue Result */}

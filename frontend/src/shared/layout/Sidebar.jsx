@@ -1,22 +1,28 @@
 import { useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { cn } from '@/shared/utils'
-import { 
-  Activity, 
-  LayoutDashboard, 
-  History, 
-  Users, 
+import { PRIMARY_NAV } from '@/shared/constants/appNav'
+import {
+  Activity,
+  LayoutDashboard,
+  History,
+  Users,
   MapPin,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react'
 
-const navItems = [
-  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/history', label: 'History', icon: History },
-  { path: '/players', label: 'Players', icon: Users },
-  { path: '/venues', label: 'Venues', icon: MapPin },
-]
+const ICON_BY_PATH = {
+  '/dashboard': LayoutDashboard,
+  '/history': History,
+  '/players': Users,
+  '/venues': MapPin,
+}
+
+const navItems = PRIMARY_NAV.map((item) => ({
+  ...item,
+  icon: ICON_BY_PATH[item.path],
+}))
 
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false)
@@ -36,7 +42,12 @@ export default function Sidebar() {
           <Activity className="w-5 h-5 text-primary" />
         </div>
         {!collapsed && (
-          <span className="text-lg font-bold text-foreground">CricketAI</span>
+          <div className="min-w-0">
+            <span className="text-lg font-bold text-foreground block leading-tight">CricketAI</span>
+            <span className="text-[10px] text-muted-foreground leading-tight block mt-0.5">
+              IPL-style match & player insights
+            </span>
+          </div>
         )}
       </div>
 
@@ -48,6 +59,7 @@ export default function Sidebar() {
             <NavLink
               key={item.path}
               to={item.path}
+              title={item.blurb}
               className={cn(
                 'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200',
                 'hover:bg-secondary',
@@ -56,7 +68,9 @@ export default function Sidebar() {
               )}
             >
               <item.icon className="w-5 h-5 shrink-0" />
-              {!collapsed && <span className="font-medium">{item.label}</span>}
+              {!collapsed && (
+                <span className="font-medium text-left leading-snug">{item.label}</span>
+              )}
             </NavLink>
           )
         })}

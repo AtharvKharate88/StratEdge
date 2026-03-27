@@ -16,7 +16,11 @@ export default function MetricCard({
   const countRef = useRef(null)
 
   useEffect(() => {
-    if (typeof value !== 'number') {
+    if (value === null || value === undefined) {
+      setDisplayValue(null)
+      return
+    }
+    if (typeof value !== 'number' || Number.isNaN(value)) {
       setDisplayValue(value)
       return
     }
@@ -34,7 +38,8 @@ export default function MetricCard({
         setDisplayValue(value)
         clearInterval(timer)
       } else {
-        setDisplayValue(Math.floor(current))
+        const isDecimal = Math.abs(value) < 100 && !Number.isInteger(value)
+        setDisplayValue(isDecimal ? current : Math.floor(current))
       }
     }, duration / steps)
 
@@ -48,11 +53,21 @@ export default function MetricCard({
           <p className="text-sm text-muted-foreground mb-1">{title}</p>
           <div className="flex items-baseline gap-1">
             <span className="text-3xl font-bold text-foreground animate-count">
-              {typeof displayValue === 'number' 
-                ? displayValue.toLocaleString() 
-                : displayValue}
+              {displayValue === null || displayValue === undefined
+                ? '—'
+                : typeof displayValue === 'number'
+                  ? Number.isFinite(displayValue)
+                    ? displayValue.toLocaleString(undefined, {
+                        maximumFractionDigits: 1,
+                      })
+                    : '—'
+                  : displayValue}
             </span>
-            {suffix && <span className="text-lg text-muted-foreground">{suffix}</span>}
+            {suffix &&
+              displayValue !== null &&
+              displayValue !== undefined && (
+                <span className="text-lg text-muted-foreground">{suffix}</span>
+              )}
           </div>
           {change !== undefined && (
             <div className="flex items-center gap-1 mt-2">

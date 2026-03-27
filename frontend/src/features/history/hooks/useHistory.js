@@ -1,11 +1,10 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { predictionService } from '@/shared/services/api'
 import { useToast } from '@/shared/hooks/useToast'
 
-// Simple cache
 let historyCache = null
 let cacheTimestamp = 0
-const CACHE_DURATION = 60000 // 1 minute
+const CACHE_DURATION = 60000
 
 export function useHistory() {
   const [history, setHistory] = useState(historyCache?.data || [])
@@ -13,9 +12,10 @@ export function useHistory() {
   const [isLoading, setIsLoading] = useState(!historyCache)
   const [error, setError] = useState(null)
   const { toast } = useToast()
+  const toastRef = useRef(toast)
+  toastRef.current = toast
 
   const fetchHistory = useCallback(async (forceRefresh = false) => {
-    // Check cache
     if (!forceRefresh && historyCache && Date.now() - cacheTimestamp < CACHE_DURATION) {
       setHistory(historyCache.data)
       setCount(historyCache.count)
@@ -29,16 +29,16 @@ export function useHistory() {
     try {
       const response = await predictionService.getHistory()
       if (response.data.success) {
-        const { data, count } = response.data
-        historyCache = { data, count }
+        const { data, count: c } = response.data
+        historyCache = { data, count: c }
         cacheTimestamp = Date.now()
         setHistory(data)
-        setCount(count)
+        setCount(c)
       }
     } catch (err) {
       const message = err.response?.data?.message || 'Failed to load history'
       setError(message)
-      toast({
+      toastRef.current({
         title: 'Error',
         description: message,
         variant: 'error',
@@ -46,7 +46,7 @@ export function useHistory() {
     } finally {
       setIsLoading(false)
     }
-  }, [toast])
+  }, [])
 
   useEffect(() => {
     fetchHistory()

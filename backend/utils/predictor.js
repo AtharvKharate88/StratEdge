@@ -1,9 +1,18 @@
+const { resolveTeamKeyInStats } = require("./teamFranchise");
+
 const predictMatch = (teamA, teamB, stats) => {
-  const a = stats[teamA];
-  const b = stats[teamB];
+  const keyA = resolveTeamKeyInStats(teamA, stats);
+  const keyB = resolveTeamKeyInStats(teamB, stats);
+  const a = keyA ? stats[keyA] : null;
+  const b = keyB ? stats[keyB] : null;
 
   if (!a || !b) {
-    throw new Error("Team data not found");
+    const missing = [!keyA && teamA, !keyB && teamB].filter(Boolean).join(", ");
+    throw new Error(
+      missing
+        ? `Team data not found for: ${missing}`
+        : "Team data not found"
+    );
   }
 
   const scoreA =
@@ -32,8 +41,8 @@ const predictMatch = (teamA, teamB, stats) => {
     },
     trustScore: trustScore.toFixed(2),
     stats: {
-      [teamA]: a,
-      [teamB]: b,
+      [teamA]: { ...a },
+      [teamB]: { ...b },
     },
   };
 };

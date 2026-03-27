@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { predictionService } from '@/shared/services/api'
 import { playerService } from '@/shared/services/api'
 import { useToast } from '@/shared/hooks/useToast'
@@ -72,6 +72,8 @@ export function usePrediction() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
   const { toast } = useToast()
+  const toastRef = useRef(toast)
+  toastRef.current = toast
 
   const predict = useCallback(async (params) => {
     setIsLoading(true)
@@ -106,7 +108,7 @@ export function usePrediction() {
     } catch (err) {
       const message = err.userMessage || err.response?.data?.message || 'Failed to get prediction'
       setError(message)
-      toast({
+      toastRef.current({
         title: 'Prediction Error',
         description: message,
         variant: 'error',
@@ -115,7 +117,7 @@ export function usePrediction() {
     } finally {
       setIsLoading(false)
     }
-  }, [toast])
+  }, [])
 
   const reset = useCallback(() => {
     setPrediction(null)

@@ -1,13 +1,15 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { playerService } from '@/shared/services/api'
 import { useToast } from '@/shared/hooks/useToast'
-import { debounce } from '@/shared/utils'
+import { isRequestAborted } from '@/shared/utils'
 
 export function usePlayerBattle() {
   const [battle, setBattle] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
   const { toast } = useToast()
+  const toastRef = useRef(toast)
+  toastRef.current = toast
   const abortControllerRef = useRef(null)
 
   const fetchBattle = useCallback(async (batter, bowler) => {
@@ -16,47 +18,40 @@ export function usePlayerBattle() {
       return
     }
 
-    // Cancel previous request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
     }
     abortControllerRef.current = new AbortController()
+    const { signal } = abortControllerRef.current
 
     setIsLoading(true)
     setError(null)
 
     try {
-      const response = await playerService.getBattle(batter, bowler)
+      const response = await playerService.getBattle(batter, bowler, { signal })
       if (response.data.success) {
         setBattle(response.data.data)
       }
     } catch (err) {
-      if (err.name !== 'CanceledError') {
-        const message = err.response?.data?.message || 'Failed to load battle data'
-        setError(message)
-        toast({
-          title: 'Error',
-          description: message,
-          variant: 'error',
-        })
-      }
+      if (isRequestAborted(err)) return
+
+      const message = err.response?.data?.message || 'Failed to load battle data'
+      setError(message)
+      toastRef.current({
+        title: 'Error',
+        description: message,
+        variant: 'error',
+      })
     } finally {
       setIsLoading(false)
     }
-  }, [toast])
-
-  // Debounced version for search inputs
-  const debouncedFetchBattle = useCallback(
-    debounce((batter, bowler) => fetchBattle(batter, bowler), 500),
-    [fetchBattle]
-  )
+  }, [])
 
   const reset = useCallback(() => {
     setBattle(null)
     setError(null)
   }, [])
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (abortControllerRef.current) {
@@ -70,7 +65,6 @@ export function usePlayerBattle() {
     isLoading,
     error,
     fetchBattle,
-    debouncedFetchBattle,
     reset,
   }
 }

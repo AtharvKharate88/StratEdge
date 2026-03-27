@@ -8,18 +8,17 @@ import Badge from '@/shared/components/Badge.jsx'
 import { SkeletonTable, SkeletonCard } from '@/shared/components/Skeleton.jsx'
 import { PlayerBattleCard } from '@/features/prediction/components/PlayerBattleCard.jsx'
 import { cn, getInitials } from '@/shared/utils'
-import { POPULAR_BATTERS, POPULAR_BOWLERS } from '@/shared/constants'
 import { Users, Star, TrendingUp, TrendingDown, Swords, RefreshCw } from 'lucide-react'
 
 export default function PlayerAnalytics() {
-  const { players, isLoading: impactLoading, refresh: refreshImpact } = usePlayerImpact(10)
+  const { players, isLoading: impactLoading, refresh: refreshImpact } = usePlayerImpact(200)
   const { battle, isLoading: battleLoading, fetchBattle, reset: resetBattle } = usePlayerBattle()
 
   const datasetPlayerNames = players
     .map((player) => player?.player)
     .filter(Boolean)
-  const batterOptions = Array.from(new Set([...datasetPlayerNames, ...POPULAR_BATTERS]))
-  const bowlerOptions = Array.from(new Set([...datasetPlayerNames, ...POPULAR_BOWLERS]))
+  const batterOptions = Array.from(new Set(datasetPlayerNames))
+  const bowlerOptions = Array.from(new Set(datasetPlayerNames))
   
   const [selectedBatter, setSelectedBatter] = useState('')
   const [selectedBowler, setSelectedBowler] = useState('')
@@ -41,9 +40,12 @@ export default function PlayerAnalytics() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Player Analytics</h1>
-          <p className="text-muted-foreground mt-1">
-            Impact scores and head-to-head battles
+          <h1 className="text-3xl font-bold text-foreground">Player analytics</h1>
+          <p className="text-muted-foreground mt-1 max-w-2xl">
+            Secondary toolbox: who is driving impact in the dataset, and how any batter has fared against
+            any bowler. Use{' '}
+            <span className="text-foreground/90">Match predictions</span> when your main goal is a match
+            winner and team context.
           </p>
         </div>
         <Button variant="outline" onClick={refreshImpact} disabled={impactLoading}>

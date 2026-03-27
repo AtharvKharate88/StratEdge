@@ -29,6 +29,24 @@ export function formatPercentage(value, decimals = 1) {
   return `${(value * 100).toFixed(decimals)}%`
 }
 
+/**
+ * predict() stores probabilities as 0–100 strings in MongoDB. Normalize to 0–1 for display math.
+ */
+export function normalizeStoredProbability(raw) {
+  const n = parseFloat(raw)
+  if (!Number.isFinite(n)) return 0.5
+  if (n > 1) return Math.min(Math.max(n / 100, 0), 1)
+  return Math.min(Math.max(n, 0), 1)
+}
+
+/** Trust may be stored as 0–100 or 0–1. */
+export function normalizeStoredTrust(raw) {
+  const n = parseFloat(raw)
+  if (!Number.isFinite(n)) return 0
+  if (n > 1) return Math.min(Math.max(n / 100, 0), 1)
+  return Math.min(Math.max(n, 0), 1)
+}
+
 export function debounce(func, wait) {
   let timeout
   return function executedFunction(...args) {
@@ -52,4 +70,13 @@ export function getInitials(name) {
 
 export function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+/** Axios/fetch aborted request (stable check across versions). */
+export function isRequestAborted(error) {
+  return (
+    error?.name === 'CanceledError' ||
+    error?.code === 'ERR_CANCELED' ||
+    error?.message === 'canceled'
+  )
 }

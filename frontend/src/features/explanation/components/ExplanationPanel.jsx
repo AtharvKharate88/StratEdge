@@ -1,65 +1,86 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Card, { CardHeader, CardTitle, CardContent } from '@/shared/components/Card.jsx'
 import Button from '@/shared/components/Button.jsx'
 import Skeleton from '@/shared/components/Skeleton.jsx'
 import { predictionService } from '@/shared/services/api'
+import { isRequestAborted } from '@/shared/utils'
 import { Sparkles, RefreshCw, X, AlertCircle } from 'lucide-react'
 
 export default function ExplanationPanel({ prediction, isOpen, onClose }) {
   const [explanation, setExplanation] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [retryTick, setRetryTick] = useState(0)
+  const predictionRef = useRef(prediction)
 
-  const fetchExplanation = useCallback(async () => {
-    if (!prediction) return
+  predictionRef.current = prediction
 
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      console.log("Sending payload:", prediction)
-
-      const response = await predictionService.getExplanation({
-        teamA: prediction.teamA,
-        teamB: prediction.teamB,
-        probability: prediction.probability,
-        trustScore: prediction.trustScore,
-        stats: prediction.stats,
-        topPlayers: prediction.topPlayers,
-        playerBattle: prediction.playerBattle,
-        venueInsight: prediction.venueInsight,
-      })
-
-      if (response?.data?.success) {
-        setExplanation(response.data.explanation)
-      } else {
-        throw new Error('Failed to get explanation')
-      }
-    } catch (err) {
-      console.error("Explanation Error:", err)
-
-      setError(
-        err.response?.data?.message ||
-        err.message ||
-        'Server not reachable'
-      )
-    } finally {
-      setIsLoading(false)
-    }
-  }, [prediction])
-
-  // ✅ FIXED: useEffect instead of useState
   useEffect(() => {
-    if (isOpen) {
-      // Reset previous state when reopening
+    if (!isOpen) {
+      setRetryTick(0)
+      return
+    }
+    if (!prediction?.id) return
+
+    const ac = new AbortController()
+    let alive = true
+
+    const run = async () => {
       setExplanation(null)
       setError(null)
+      setIsLoading(true)
 
-      fetchExplanation()
+      const p = predictionRef.current
+      if (!p?.teamA || !p?.teamB) {
+        setIsLoading(false)
+        setError('Missing match data for this prediction.')
+        return
+      }
+
+      try {
+        const response = await predictionService.getExplanation(
+          {
+            teamA: p.teamA,
+            teamB: p.teamB,
+            probability: p.probability,
+            trustScore: p.trustScore,
+            stats: p.stats,
+            topPlayers: p.topPlayers,
+            playerBattle: p.playerBattle,
+            venueInsight: p.venueInsight,
+          },
+          { signal: ac.signal }
+        )
+
+        if (!alive || ac.signal.aborted) return
+
+        if (response?.data?.success) {
+          setExplanation(response.data.explanation)
+        } else {
+          throw new Error('Failed to get explanation')
+        }
+      } catch (err) {
+        if (!alive || ac.signal.aborted || isRequestAborted(err)) return
+        setError(
+          err.response?.data?.message ||
+            err.message ||
+            'Server not reachable'
+        )
+      } finally {
+        if (alive && !ac.signal.aborted) setIsLoading(false)
+      }
     }
-  }, [isOpen, fetchExplanation])
+
+    run()
+    return () => {
+      alive = false
+      ac.abort()
+    }
+  }, [isOpen, prediction?.id, retryTick])
 
   if (!isOpen) return null
+
+  const handleRetry = () => setRetryTick((t) => t + 1)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-fade-in">
@@ -95,7 +116,7 @@ export default function ExplanationPanel({ prediction, isOpen, onClose }) {
               </div>
               <p className="text-foreground font-medium mb-2">Failed to Generate Explanation</p>
               <p className="text-sm text-muted-foreground mb-4">{error}</p>
-              <Button variant="outline" onClick={fetchExplanation}>
+              <Button variant="outline" onClick={handleRetry}>
                 <RefreshCw className="w-4 h-4" />
                 Try Again
               </Button>
@@ -113,13 +134,13 @@ export default function ExplanationPanel({ prediction, isOpen, onClose }) {
           {!isLoading && !error && !explanation && (
             <div className="flex flex-col items-center py-8 text-center">
               <Sparkles className="w-12 h-12 text-primary mb-4" />
-              <p className="text-foreground font-medium mb-2">Generate AI Explanation</p>
+              <p className="text-foreground font-medium mb-2">No explanation yet</p>
               <p className="text-sm text-muted-foreground mb-4">
-                Get a detailed analysis of this prediction powered by AI
+                Something went wrong loading the summary. Try again.
               </p>
-              <Button onClick={fetchExplanation}>
+              <Button onClick={handleRetry}>
                 <Sparkles className="w-4 h-4" />
-                Generate Explanation
+                Retry
               </Button>
             </div>
           )}

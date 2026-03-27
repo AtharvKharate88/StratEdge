@@ -1,10 +1,11 @@
+import { Link } from 'react-router-dom'
 import { useHistory } from '../hooks/useHistory'
 import Card, { CardHeader, CardTitle, CardContent } from '@/shared/components/Card.jsx'
 import Badge from '@/shared/components/Badge.jsx'
 import Button from '@/shared/components/Button.jsx'
 import Empty from '@/shared/components/Empty.jsx'
 import { SkeletonTable } from '@/shared/components/Skeleton.jsx'
-import { cn, formatDate } from '@/shared/utils'
+import { cn, formatDate, normalizeStoredProbability, normalizeStoredTrust } from '@/shared/utils'
 import { History as HistoryIcon, RefreshCw, TrendingUp, Shield } from 'lucide-react'
 
 export default function History() {
@@ -15,9 +16,9 @@ export default function History() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Prediction History</h1>
+          <h1 className="text-3xl font-bold text-foreground">Your history</h1>
           <p className="text-muted-foreground mt-1">
-            {count} predictions made
+            {count} saved prediction{count === 1 ? '' : 's'} from your account
           </p>
         </div>
         <Button variant="outline" onClick={refresh} disabled={isLoading}>
@@ -41,7 +42,15 @@ export default function History() {
             <Empty
               icon={HistoryIcon}
               title="No predictions yet"
-              description="Start making predictions to see your history here."
+              description={
+                <span>
+                  Run a match prediction first on{' '}
+                  <Link to="/dashboard" className="text-primary font-medium hover:underline">
+                    Match predictions
+                  </Link>
+                  . Each run is stored here when you are logged in.
+                </span>
+              }
             />
           )}
 
@@ -58,14 +67,15 @@ export default function History() {
                 </thead>
                 <tbody>
                   {history.map((item, index) => {
-                    const probA = item.probability?.[item.teamA] || 0.5
-                    const probB = item.probability?.[item.teamB] || 0.5
+                    const probA = normalizeStoredProbability(item.probability?.[item.teamA])
+                    const probB = normalizeStoredProbability(item.probability?.[item.teamB])
                     const winner = probA > probB ? item.teamA : item.teamB
                     const winProb = Math.max(probA, probB)
+                    const trustFrac = normalizeStoredTrust(item.trustScore)
 
                     return (
                       <tr
-                        key={item.id || index}
+                        key={item._id || item.id || index}
                         className="border-b border-border/50 hover:bg-secondary/30 transition-colors cursor-pointer"
                         style={{ animationDelay: `${index * 50}ms` }}
                       >
@@ -89,11 +99,11 @@ export default function History() {
                           <div className="flex items-center gap-2">
                             <Shield className={cn(
                               'w-4 h-4',
-                              item.trustScore >= 0.7 ? 'text-green-500' : 
-                              item.trustScore >= 0.5 ? 'text-accent' : 'text-yellow-500'
+                              trustFrac >= 0.7 ? 'text-green-500' : 
+                              trustFrac >= 0.5 ? 'text-accent' : 'text-yellow-500'
                             )} />
                             <span className="font-medium">
-                              {(item.trustScore * 100).toFixed(0)}%
+                              {(trustFrac * 100).toFixed(0)}%
                             </span>
                           </div>
                         </td>

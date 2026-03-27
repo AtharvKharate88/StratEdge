@@ -1,29 +1,23 @@
 import { useState, useEffect, useCallback } from 'react'
+import { Link } from 'react-router-dom'
 import { usePrediction } from '../hooks/usePrediction'
+import { useDashboardMetrics } from '../hooks/useDashboardMetrics'
 import { useBehaviorTracking } from '@/features/behavior/hooks/useBehaviorTracking'
-import { usePlayerImpact } from '@/features/player-analytics/hooks/usePlayerImpact'
 import { useAppContext } from '@/shared/context/AppContext.jsx'
 import PredictionForm from '../components/PredictionForm.jsx'
 import PredictionResult from '../components/PredictionResult.jsx'
 import ExplanationPanel from '@/features/explanation/components/ExplanationPanel.jsx'
 import MetricCard from '@/shared/components/MetricCard.jsx'
+import Card, { CardHeader, CardTitle, CardContent } from '@/shared/components/Card.jsx'
 import { SkeletonCard } from '@/shared/components/Skeleton.jsx'
-import { POPULAR_BATTERS, POPULAR_BOWLERS } from '@/shared/constants'
-import { Activity, TrendingUp, Target, Users } from 'lucide-react'
+import { Activity, TrendingUp, Target, Users, ListOrdered, Database } from 'lucide-react'
 
 export default function Dashboard() {
   const { prediction, isLoading, predict, reset } = usePrediction()
-  const { players: impactPlayers } = usePlayerImpact(50)
+  const { metrics, isLoading: metricsLoading } = useDashboardMetrics()
   const { selectedTeam, setSelectedTeam } = useAppContext()
   const [showExplanation, setShowExplanation] = useState(false)
   const [isExplaining, setIsExplaining] = useState(false)
-
-  const datasetPlayerNames = impactPlayers
-    .map((player) => player?.player)
-    .filter(Boolean)
-
-  const batterOptions = Array.from(new Set([...datasetPlayerNames, ...POPULAR_BATTERS]))
-  const bowlerOptions = Array.from(new Set([...datasetPlayerNames, ...POPULAR_BOWLERS]))
 
   // Behavior tracking
   const { startTracking, stopTracking, trackClick } = useBehaviorTracking()
@@ -59,40 +53,97 @@ export default function Dashboard() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">
-          AI-powered cricket match predictions and analytics
+        <h1 className="text-3xl font-bold text-foreground">Match predictions</h1>
+        <p className="text-muted-foreground mt-1 max-w-3xl">
+          Pick two IPL teams and get a modeled win probability plus supporting numbers. Optional extras:
+          venue context, a batter-vs-bowler matchup from recent data, and an AI-written explanation.
         </p>
       </div>
 
-      {/* Quick Stats */}
+      <Card className="border-primary/20 bg-primary/[0.03]">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <ListOrdered className="w-5 h-5 text-primary" />
+            How to get value from this page
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 text-sm text-muted-foreground">
+          <ol className="list-decimal list-inside space-y-2 text-foreground/90">
+            <li>
+              <span className="text-muted-foreground">Choose Team A and Team B, then </span>
+              <strong className="text-foreground font-medium">Generate Prediction</strong>
+              <span className="text-muted-foreground">
+                {' '}
+                — your main output is predicted winner, win probability bar, trust meter, and team stat
+                comparison.
+              </span>
+            </li>
+            <li>
+              <span className="text-muted-foreground">Open </span>
+              <strong className="text-foreground font-medium">Advanced options</strong>
+              <span className="text-muted-foreground">
+                {' '}
+                to add a venue and/or a player battle (batters from Team A, bowlers from Team B, from the
+                latest match window in the dataset).
+              </span>
+            </li>
+            <li>
+              <span className="text-muted-foreground">After a result appears, use </span>
+              <strong className="text-foreground font-medium">Explain with AI</strong>
+              <span className="text-muted-foreground"> for a narrative summary.</span>
+            </li>
+          </ol>
+          <div className="flex items-start gap-2 pt-2 border-t border-border">
+            <Database className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+            <p>
+              <span className="text-foreground font-medium text-sm">What the backend uses: </span>
+              historical match and ball-by-ball CSVs (team win rates and run rates, player impact,
+              head-to-head balls, venue metadata). Dashboard KPI cards use your saved predictions and
+              player list from the API.
+            </p>
+          </div>
+          <p className="text-xs">
+            Other tools:{' '}
+            <Link to="/players" className="text-primary hover:underline">
+              Player analytics
+            </Link>
+            {' · '}
+            <Link to="/venues" className="text-primary hover:underline">
+              Venues
+            </Link>
+            {' · '}
+            <Link to="/history" className="text-primary hover:underline">
+              Your history
+            </Link>
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Quick Stats — loaded from API */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           icon={Activity}
           title="Predictions Today"
-          value={12}
-          change={15}
-          trend="up"
+          value={metricsLoading ? undefined : metrics?.predictionsToday}
         />
         <MetricCard
           icon={Target}
           title="Accuracy Rate"
-          value={87.5}
+          value={
+            metricsLoading ? undefined : metrics?.accuracyRate ?? null
+          }
           suffix="%"
-          change={3.2}
-          trend="up"
         />
         <MetricCard
           icon={TrendingUp}
           title="Avg Trust Score"
-          value={0.78}
-          change={5}
-          trend="up"
+          value={metricsLoading ? undefined : metrics?.avgTrustScore}
+          suffix="%"
         />
         <MetricCard
           icon={Users}
           title="Players Analyzed"
-          value={156}
+          value={metricsLoading ? undefined : metrics?.playersAnalyzed}
         />
       </div>
 
@@ -105,8 +156,6 @@ export default function Dashboard() {
             isLoading={isLoading}
             selectedTeam={selectedTeam}
             onTeamChange={setSelectedTeam}
-            batterOptions={batterOptions}
-            bowlerOptions={bowlerOptions}
           />
         </div>
 
@@ -137,11 +186,12 @@ export default function Dashboard() {
                 <Activity className="w-8 h-8 text-primary" />
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-2">
-                Ready to Predict
+                Your output will show up here
               </h3>
-              <p className="text-muted-foreground max-w-md mx-auto">
-                Select two teams and generate an AI-powered prediction with detailed analytics, 
-                player insights, and venue information.
+              <p className="text-muted-foreground max-w-lg mx-auto text-sm leading-relaxed">
+                Use the form on the left: submit two teams first. You will get win odds, a side-by-side
+                team stats panel, top impact players from the model, and—if you used Advanced Options—venue
+                and player battle cards.
               </p>
             </div>
           )}

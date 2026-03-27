@@ -1,12 +1,15 @@
 import { useState, useRef, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useAuth } from '@/features/auth/AuthContext.jsx'
+import { getNavMeta } from '@/shared/constants/appNav'
 import { cn, getInitials } from '@/shared/utils'
-import { Search, Bell, LogOut, User, ChevronDown } from 'lucide-react'
+import { LogOut, User, ChevronDown } from 'lucide-react'
 
 export default function Navbar() {
+  const location = useLocation()
+  const navMeta = getNavMeta(location.pathname)
   const { user, logout } = useAuth()
   const [showDropdown, setShowDropdown] = useState(false)
-  const [notifications] = useState(3)
   const dropdownRef = useRef(null)
 
   useEffect(() => {
@@ -22,28 +25,16 @@ export default function Navbar() {
   return (
     <header className="h-16 glass border-b border-border sticky top-0 z-30">
       <div className="h-full px-6 flex items-center justify-between">
-        {/* Search */}
-        <div className="relative w-80">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search predictions, players, venues..."
-            className="w-full h-10 pl-10 pr-4 rounded-lg bg-secondary/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-          />
+        {/* Where you are + what this page is for (sidebar is the main navigator) */}
+        <div className="min-w-0 max-w-xl">
+          <p className="text-sm font-semibold text-foreground truncate">{navMeta.label}</p>
+          {navMeta.blurb ? (
+            <p className="text-xs text-muted-foreground truncate">{navMeta.blurb}</p>
+          ) : null}
         </div>
 
         {/* Right side */}
         <div className="flex items-center gap-4">
-          {/* Notifications */}
-          <button className="relative w-10 h-10 rounded-lg bg-secondary/50 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
-            <Bell className="w-5 h-5" />
-            {notifications > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-xs font-medium flex items-center justify-center">
-                {notifications}
-              </span>
-            )}
-          </button>
-
           {/* Profile Dropdown */}
           <div ref={dropdownRef} className="relative">
             <button

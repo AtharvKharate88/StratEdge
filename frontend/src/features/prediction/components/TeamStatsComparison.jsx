@@ -8,11 +8,27 @@ export function TeamStatsComparison({ teamA, teamB, stats }) {
   const statsA = stats?.[teamA] || {}
   const statsB = stats?.[teamB] || {}
 
+  const fmtPct = (v) => {
+    const n = typeof v === 'number' ? v : parseFloat(v)
+    if (!Number.isFinite(n)) return '—'
+    return `${(n * 100).toFixed(1)}%`
+  }
+  const fmtRuns = (v) => {
+    const n = typeof v === 'number' ? v : parseFloat(v)
+    if (!Number.isFinite(n)) return '—'
+    return n.toFixed(0)
+  }
+  const fmtNum = (v) => {
+    const n = typeof v === 'number' ? v : parseFloat(v)
+    if (!Number.isFinite(n)) return '—'
+    return String(n)
+  }
+
   const statItems = [
-    { label: 'Win Rate', keyA: statsA.winRate, keyB: statsB.winRate, format: (v) => `${(v * 100).toFixed(1)}%` },
-    { label: 'Avg Score', keyA: statsA.avgScore, keyB: statsB.avgScore, format: (v) => v?.toFixed(0) || '-' },
-    { label: 'Form', keyA: statsA.recentForm, keyB: statsB.recentForm, format: (v) => v || '-' },
-    { label: 'H2H Wins', keyA: statsA.h2hWins, keyB: statsB.h2hWins, format: (v) => v || '0' },
+    { label: 'Win Rate', keyA: statsA.winRate, keyB: statsB.winRate, format: fmtPct },
+    { label: 'Avg Score', keyA: statsA.avgScore, keyB: statsB.avgScore, format: fmtRuns },
+    { label: 'Form', keyA: statsA.recentForm, keyB: statsB.recentForm, format: fmtNum },
+    { label: 'H2H Wins', keyA: statsA.h2hWins, keyB: statsB.h2hWins, format: (v) => fmtNum(v) },
   ]
   const teamALogo = getTeamLogo(teamA)
   const teamBLogo = getTeamLogo(teamB)
@@ -44,10 +60,12 @@ export function TeamStatsComparison({ teamA, teamB, stats }) {
           {statItems.map((stat, index) => {
             const valueA = stat.keyA
             const valueB = stat.keyB
-            const numA = typeof valueA === 'number' ? valueA : parseFloat(valueA) || 0
-            const numB = typeof valueB === 'number' ? valueB : parseFloat(valueB) || 0
-            const isABetter = numA > numB
-            const isBBetter = numB > numA
+            const numA = typeof valueA === 'number' ? valueA : parseFloat(valueA)
+            const numB = typeof valueB === 'number' ? valueB : parseFloat(valueB)
+            const safeA = Number.isFinite(numA) ? numA : 0
+            const safeB = Number.isFinite(numB) ? numB : 0
+            const isABetter = safeA > safeB
+            const isBBetter = safeB > safeA
 
             return (
               <div 
