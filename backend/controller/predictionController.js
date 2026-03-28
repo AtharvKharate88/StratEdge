@@ -22,18 +22,21 @@ const predict = asyncHandler(async (req, res) => {
     );
     venueInsight = venueKey ? allVenueData[venueKey] : null;
   }
-  const topPlayers = getPlayerImpactData().slice(0, 5);
+  const topPlayers = getPlayerImpactData()
+    .filter((row) => row && row.player)
+    .slice(0, 5);
   const playerBattle =
     batter && bowler
       ? getPlayerBattleStats(batter, bowler, getDeliveriesData())
       : null;
 
-  // Save prediction to database
+  const trustNum = Number(result.trustScore);
   const prediction = await Prediction.create({
+    userId: req.userId,
     teamA,
     teamB,
     probability: result.probability,
-    trustScore: result.trustScore,
+    trustScore: Number.isFinite(trustNum) ? trustNum : 0,
     stats: result.stats,
   });
 

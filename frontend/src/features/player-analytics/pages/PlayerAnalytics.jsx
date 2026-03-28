@@ -8,15 +8,21 @@ import Badge from '@/shared/components/Badge.jsx'
 import { SkeletonTable, SkeletonCard } from '@/shared/components/Skeleton.jsx'
 import { PlayerBattleCard } from '@/features/prediction/components/PlayerBattleCard.jsx'
 import { cn, getInitials } from '@/shared/utils'
-import { Users, Star, TrendingUp, TrendingDown, Swords, RefreshCw } from 'lucide-react'
+import { Star, TrendingUp, TrendingDown, Swords, RefreshCw } from 'lucide-react'
+
+function isValidPlayerName(name) {
+  if (name == null) return false
+  const s = String(name).trim()
+  return s.length > 0 && s.toLowerCase() !== 'undefined' && s.toUpperCase() !== 'NA'
+}
 
 export default function PlayerAnalytics() {
   const { players, isLoading: impactLoading, refresh: refreshImpact } = usePlayerImpact(200)
   const { battle, isLoading: battleLoading, fetchBattle, reset: resetBattle } = usePlayerBattle()
 
-  const datasetPlayerNames = players
-    .map((player) => player?.player)
-    .filter(Boolean)
+  const impactRows = players.filter((p) => isValidPlayerName(p?.player))
+
+  const datasetPlayerNames = impactRows.map((player) => player.player)
   const batterOptions = Array.from(new Set(datasetPlayerNames))
   const bowlerOptions = Array.from(new Set(datasetPlayerNames))
   
@@ -66,9 +72,15 @@ export default function PlayerAnalytics() {
           <CardContent>
             {impactLoading && <SkeletonTable rows={5} />}
 
-            {!impactLoading && players.length > 0 && (
+            {!impactLoading && impactRows.length === 0 && (
+              <p className="text-sm text-muted-foreground py-4 text-center">
+                No player impact rows to show. Refresh after the backend has loaded match data.
+              </p>
+            )}
+
+            {!impactLoading && impactRows.length > 0 && (
               <div className="space-y-3">
-                {players.map((player, index) => (
+                {impactRows.map((player, index) => (
                   <div
                     key={player.player || index}
                     className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors animate-fade-in"

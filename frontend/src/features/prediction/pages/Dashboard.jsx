@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Link } from 'react-router-dom'
 import { usePrediction } from '../hooks/usePrediction'
 import { useDashboardMetrics } from '../hooks/useDashboardMetrics'
 import { useBehaviorTracking } from '@/features/behavior/hooks/useBehaviorTracking'
@@ -8,9 +7,8 @@ import PredictionForm from '../components/PredictionForm.jsx'
 import PredictionResult from '../components/PredictionResult.jsx'
 import ExplanationPanel from '@/features/explanation/components/ExplanationPanel.jsx'
 import MetricCard from '@/shared/components/MetricCard.jsx'
-import Card, { CardHeader, CardTitle, CardContent } from '@/shared/components/Card.jsx'
 import { SkeletonCard } from '@/shared/components/Skeleton.jsx'
-import { Activity, TrendingUp, Target, Users, ListOrdered, Database } from 'lucide-react'
+import { Activity, TrendingUp, Target, Users } from 'lucide-react'
 
 export default function Dashboard() {
   const { prediction, isLoading, predict, reset } = usePrediction()
@@ -59,65 +57,6 @@ export default function Dashboard() {
           venue context, a batter-vs-bowler matchup from recent data, and an AI-written explanation.
         </p>
       </div>
-
-      <Card className="border-primary/20 bg-primary/[0.03]">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base flex items-center gap-2">
-            <ListOrdered className="w-5 h-5 text-primary" />
-            How to get value from this page
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 text-sm text-muted-foreground">
-          <ol className="list-decimal list-inside space-y-2 text-foreground/90">
-            <li>
-              <span className="text-muted-foreground">Choose Team A and Team B, then </span>
-              <strong className="text-foreground font-medium">Generate Prediction</strong>
-              <span className="text-muted-foreground">
-                {' '}
-                — your main output is predicted winner, win probability bar, trust meter, and team stat
-                comparison.
-              </span>
-            </li>
-            <li>
-              <span className="text-muted-foreground">Open </span>
-              <strong className="text-foreground font-medium">Advanced options</strong>
-              <span className="text-muted-foreground">
-                {' '}
-                to add a venue and/or a player battle (batters from Team A, bowlers from Team B, from the
-                latest match window in the dataset).
-              </span>
-            </li>
-            <li>
-              <span className="text-muted-foreground">After a result appears, use </span>
-              <strong className="text-foreground font-medium">Explain with AI</strong>
-              <span className="text-muted-foreground"> for a narrative summary.</span>
-            </li>
-          </ol>
-          <div className="flex items-start gap-2 pt-2 border-t border-border">
-            <Database className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-            <p>
-              <span className="text-foreground font-medium text-sm">What the backend uses: </span>
-              historical match and ball-by-ball CSVs (team win rates and run rates, player impact,
-              head-to-head balls, venue metadata). Dashboard KPI cards use your saved predictions and
-              player list from the API.
-            </p>
-          </div>
-          <p className="text-xs">
-            Other tools:{' '}
-            <Link to="/players" className="text-primary hover:underline">
-              Player analytics
-            </Link>
-            {' · '}
-            <Link to="/venues" className="text-primary hover:underline">
-              Venues
-            </Link>
-            {' · '}
-            <Link to="/history" className="text-primary hover:underline">
-              Your history
-            </Link>
-          </p>
-        </CardContent>
-      </Card>
 
       {/* Quick Stats — loaded from API */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

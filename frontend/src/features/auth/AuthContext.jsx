@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { authService } from '@/shared/services/api'
 import { STORAGE_KEYS } from '@/shared/constants'
+import { clearHistoryCache } from '@/features/history/hooks/useHistory'
 
 const AuthContext = createContext(null)
 
@@ -33,10 +34,11 @@ export function AuthProvider({ children }) {
     localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken)
     localStorage.setItem(STORAGE_KEYS.USER_ID, userId)
     localStorage.setItem(STORAGE_KEYS.USER_EMAIL, email)
-    
+
+    clearHistoryCache()
     setUser({ id: userId, email })
     setIsAuthenticated(true)
-    
+
     return response.data
   }, [])
 
@@ -54,6 +56,7 @@ export function AuthProvider({ children }) {
     } catch (error) {
       console.error('Logout error:', error)
     } finally {
+      clearHistoryCache()
       localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN)
       localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
       localStorage.removeItem(STORAGE_KEYS.USER_ID)

@@ -4,7 +4,9 @@ const getPlayerImpact = (req, res) => {
   try {
     const top = Number(req.query.top) || 10;
 
-    const result = getPlayerImpactData().slice(0, top);
+    const result = getPlayerImpactData()
+      .filter((row) => row && row.player)
+      .slice(0, top);
 
     res.status(200).json({
       success: true,

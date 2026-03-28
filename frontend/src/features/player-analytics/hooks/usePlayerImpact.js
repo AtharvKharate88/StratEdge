@@ -2,21 +2,29 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { playerService } from '@/shared/services/api'
 import { useToast } from '@/shared/hooks/useToast'
 
-let impactCache = null
-let cacheTimestamp = 0
+let impactCache = { top: null, data: null, count: 0, ts: 0 }
 const CACHE_DURATION = 300000
 
 export function usePlayerImpact(top = 10) {
-  const [players, setPlayers] = useState(impactCache?.data || [])
-  const [count, setCount] = useState(impactCache?.count || 0)
-  const [isLoading, setIsLoading] = useState(!impactCache)
+  const [players, setPlayers] = useState(
+    impactCache.top === top ? impactCache.data || [] : []
+  )
+  const [count, setCount] = useState(
+    impactCache.top === top ? impactCache.count || 0 : 0
+  )
+  const [isLoading, setIsLoading] = useState(!(impactCache.top === top && impactCache.data))
   const [error, setError] = useState(null)
   const { toast } = useToast()
   const toastRef = useRef(toast)
   toastRef.current = toast
 
   const fetchImpact = useCallback(async (forceRefresh = false) => {
-    if (!forceRefresh && impactCache && Date.now() - cacheTimestamp < CACHE_DURATION) {
+    if (
+      !forceRefresh &&
+      impactCache.top === top &&
+      impactCache.data &&
+      Date.now() - impactCache.ts < CACHE_DURATION
+    ) {
       setPlayers(impactCache.data)
       setCount(impactCache.count)
       setIsLoading(false)
@@ -29,9 +37,16 @@ export function usePlayerImpact(top = 10) {
     try {
       const response = await playerService.getImpactLeaderboard(top)
       if (response.data.success) {
-        const { data, count: c } = response.data
-        impactCache = { data, count: c }
-        cacheTimestamp = Date.now()
+        const raw = response.data.data
+        const data = Array.isArray(raw)
+          ? raw.filter((row) => {
+              if (!row?.player) return false
+              const s = String(row.player).trim()
+              return s.length > 0 && s.toLowerCase() !== 'undefined' && s.toUpperCase() !== 'NA'
+            })
+          : []
+        const c = response.data.count ?? data.length
+        impactCache = { top, data, count: c, ts: Date.now() }
         setPlayers(data)
         setCount(c)
       }

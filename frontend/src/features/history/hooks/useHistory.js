@@ -6,6 +6,12 @@ let historyCache = null
 let cacheTimestamp = 0
 const CACHE_DURATION = 60000
 
+/** Call on login/logout so another user never sees cached rows. */
+export function clearHistoryCache() {
+  historyCache = null
+  cacheTimestamp = 0
+}
+
 export function useHistory() {
   const [history, setHistory] = useState(historyCache?.data || [])
   const [count, setCount] = useState(historyCache?.count || 0)

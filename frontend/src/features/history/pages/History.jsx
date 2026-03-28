@@ -18,7 +18,7 @@ export default function History() {
         <div>
           <h1 className="text-3xl font-bold text-foreground">Your history</h1>
           <p className="text-muted-foreground mt-1">
-            {count} saved prediction{count === 1 ? '' : 's'} from your account
+            {count} prediction{count === 1 ? '' : 's'} you ran while signed in (not other users)
           </p>
         </div>
         <Button variant="outline" onClick={refresh} disabled={isLoading}>

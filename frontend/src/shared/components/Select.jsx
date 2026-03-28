@@ -1,6 +1,19 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { cn } from '@/shared/utils'
 import { ChevronDown, Check, Search } from 'lucide-react'
+
+function isValidOption(option) {
+  if (option == null) return false
+  if (typeof option === 'string') {
+    const s = option.trim()
+    return s.length > 0 && s.toLowerCase() !== 'undefined'
+  }
+  const v = option.value
+  const label = option.label ?? option.value
+  if (v == null || String(v).trim() === '') return false
+  const ls = label != null ? String(label).trim() : ''
+  return ls.length > 0 && ls.toLowerCase() !== 'undefined'
+}
 
 export default function Select({
   value,
@@ -28,18 +41,30 @@ export default function Select({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  const safeOptions = useMemo(
+    () => (Array.isArray(options) ? options.filter(isValidOption) : []),
+    [options]
+  )
+
   const getOptionValue = (option) => (typeof option === 'string' ? option : option?.value)
-  const getOptionLabel = (option) => (typeof option === 'string' ? option : option?.label || option?.value)
+  const getOptionLabel = (option) =>
+    typeof option === 'string'
+      ? option
+      : String(option?.label ?? option?.value ?? '')
   const getOptionIcon = (option) => (typeof option === 'string' ? null : option?.icon)
 
   const filteredOptions = searchable
-    ? options.filter((opt) =>
-        getOptionLabel(opt)?.toLowerCase().includes(search.toLowerCase())
+    ? safeOptions.filter((opt) =>
+        getOptionLabel(opt).toLowerCase().includes(search.toLowerCase())
       )
-    : options
+    : safeOptions
 
-  const selectedOption = options.find((opt) => getOptionValue(opt) === value)
-  const selectedLabel = selectedOption ? getOptionLabel(selectedOption) : (value || placeholder)
+  const selectedOption = safeOptions.find((opt) => getOptionValue(opt) === value)
+  const selectedLabel = selectedOption
+    ? getOptionLabel(selectedOption)
+    : value && String(value).trim() && String(value).toLowerCase() !== 'undefined'
+      ? String(value)
+      : placeholder
   const selectedIcon = selectedOption ? getOptionIcon(selectedOption) : null
 
   return (
@@ -99,14 +124,14 @@ export default function Select({
                 No options found
               </div>
             ) : (
-              filteredOptions.map((option) => {
+              filteredOptions.map((option, index) => {
                 const optionValue = getOptionValue(option)
                 const optionLabel = getOptionLabel(option)
                 const optionIcon = getOptionIcon(option)
 
                 return (
                 <button
-                  key={optionValue}
+                  key={`${String(optionValue)}-${index}`}
                   type="button"
                   onClick={() => {
                     onChange(optionValue)

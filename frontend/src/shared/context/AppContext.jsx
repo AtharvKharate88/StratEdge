@@ -78,7 +78,13 @@ export function AppProvider({ children }) {
         if (!isMounted) return
 
         const apiPlayers = Array.isArray(response?.data?.data) ? response.data.data : []
-        const normalized = apiPlayers.map((player) => ({
+        const normalized = apiPlayers
+          .filter((p) => {
+            if (!p?.player) return false
+            const s = String(p.player).trim()
+            return s.length > 0 && s.toLowerCase() !== 'undefined' && s.toUpperCase() !== 'NA'
+          })
+          .map((player) => ({
           ...player,
           name: player.player,
           team: inferTeam(player.player, player.team),

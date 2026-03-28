@@ -11,9 +11,13 @@ const calculatePlayerImpact = (deliveries) => {
   
     deliveries.forEach((ball) => {
       const player = ball.batter;
-  
-      if (!playerStats[player]) {
-        playerStats[player] = {
+      const name = player != null ? String(player).trim() : "";
+      if (!name || name === "NA" || name.toLowerCase() === "undefined") {
+        return;
+      }
+
+      if (!playerStats[name]) {
+        playerStats[name] = {
           runs: 0,
           balls: 0,
           matches: new Set(),
@@ -23,27 +27,27 @@ const calculatePlayerImpact = (deliveries) => {
           recentBallsLastYear: 0,
         };
       }
-  
-      playerStats[player].runs += Number(ball.batsman_runs || 0);
-      playerStats[player].balls += 1;
-  
+
+      playerStats[name].runs += Number(ball.batsman_runs || 0);
+      playerStats[name].balls += 1;
+
       // track matches
-      playerStats[player].matches.add(ball.match_id);
+      playerStats[name].matches.add(ball.match_id);
 
       const matchIdNum = Number(ball.match_id);
       if (thisYearIds.has(matchIdNum)) {
-        playerStats[player].recentRunsThisYear += Number(ball.batsman_runs || 0);
-        playerStats[player].recentBallsThisYear += 1;
+        playerStats[name].recentRunsThisYear += Number(ball.batsman_runs || 0);
+        playerStats[name].recentBallsThisYear += 1;
       } else if (lastYearIds.has(matchIdNum)) {
-        playerStats[player].recentRunsLastYear += Number(ball.batsman_runs || 0);
-        playerStats[player].recentBallsLastYear += 1;
+        playerStats[name].recentRunsLastYear += Number(ball.batsman_runs || 0);
+        playerStats[name].recentBallsLastYear += 1;
       }
     });
   
     const impactArray = [];
   
-    Object.keys(playerStats).forEach((player) => {
-      const data = playerStats[player];
+    Object.keys(playerStats).forEach((playerKey) => {
+      const data = playerStats[playerKey];
   
       const matches = data.matches.size;
       const avgRuns = matches ? data.runs / matches : 0;
@@ -70,7 +74,7 @@ const calculatePlayerImpact = (deliveries) => {
         formFactor * 0.2;
   
       impactArray.push({
-        player,
+        player: playerKey,
         impactScore: Number(impactScore.toFixed(2)),
         avgRuns: Number(avgRuns.toFixed(2)),
         strikeRate: Number(strikeRate.toFixed(2)),
