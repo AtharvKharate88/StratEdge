@@ -20,102 +20,82 @@ const generateExplanation = async (data) => {
 
   const genAI = new GoogleGenerativeAI(apiKey);
 
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  const model = genAI.getGenerativeModel({
+    model: "gemini-2.5-flash",
+  });
+
+  // 🔥 reduce data (VERY IMPORTANT)
+  const safePlayers = (topPlayers || []).slice(0, 2);
 
   const prompt = `
-You are a professional IPL data analyst.
+IPL Analysis:
 
-Your job is NOT to repeat stats.
-Your job is to INTERPRET them and give deep match insight.
-
--------------------------------------
-
-MATCH:
 ${teamA} vs ${teamB}
 
-WIN PROBABILITY:
-${teamA}: ${probability[teamA]}%
-${teamB}: ${probability[teamB]}%
+Prob: ${teamA} ${probability[teamA]}%, ${teamB} ${probability[teamB]}%
 
-TRUST SCORE:
-${trustScore}
+Stats:
+${teamA} WR:${stats[teamA].winRate}, Runs:${stats[teamA].avgRuns}
+${teamB} WR:${stats[teamB].winRate}, Runs:${stats[teamB].avgRuns}
 
--------------------------------------
+Players:
+${safePlayers.map(p => `${p.player}:${p.impactScore}`).join(", ")}
 
-TEAM STATS:
-${teamA} -> Win Rate: ${stats[teamA].winRate}, Avg Runs: ${stats[teamA].avgRuns}
-${teamB} -> Win Rate: ${stats[teamB].winRate}, Avg Runs: ${stats[teamB].avgRuns}
+Matchup:
+${playerBattle?.batter || "N/A"} vs ${playerBattle?.bowler || "N/A"}
+SR:${playerBattle?.strikeRate || "-"}
 
--------------------------------------
+Venue:
+${venueInsight?.type || "Unknown"}
 
-TOP PLAYERS:
-${topPlayers?.map((p) => `${p.player} (${p.impactScore})`).join(", ")}
+Trust:${trustScore}
 
--------------------------------------
-
-PLAYER MATCHUP:
-${playerBattle?.batter} vs ${playerBattle?.bowler}
-Runs: ${playerBattle?.runs}, Balls: ${playerBattle?.balls}, SR: ${playerBattle?.strikeRate}, Dismissals: ${playerBattle?.dismissals}
-
--------------------------------------
-
-VENUE:
-${venueInsight ? `
-Type: ${venueInsight.type}
-Avg Runs: ${venueInsight.avgRuns}
-` : "No venue data"}
-
--------------------------------------
-
-INSTRUCTIONS:
-
-Provide a DEEP analysis covering:
-
-1. Match Narrative
-- Who has the edge and WHY (not just probability)
-
-2. Team Strength Comparison
-- Batting strength
-- Consistency vs volatility
-- Scoring patterns
-
-3. Key Player Influence
-- Which players are driving outcome
-- Who can change the match
-
-4. Player Matchup Insight
-- Who dominates (batter or bowler)
-- Tactical implication
-
-5. Venue Impact
-- How pitch conditions affect result
-- Whether it benefits batting or bowling side
-
-6. Trust Score Interpretation
-- Why confidence is high/low
-- What uncertainty exists
-
--------------------------------------
-
-STYLE:
-
-- Analytical (not generic)
-- Insightful (like expert panel discussion)
-- Avoid repeating raw numbers
-- Explain "WHY", not "WHAT"
-
--------------------------------------
-
-FORMAT:
-
-Write in structured paragraphs (not bullet points).
-Keep it detailed but readable (6-10 lines).
+Output format:
+Edge: team + reason (with numbers)
+Players: key + impact
+Matchup: advantage
+Venue: effect
+Confidence: level + reason
 `;
 
-  const result = await model.generateContent(prompt);
-  const response = await result.response;
+  try {
+    const result = await Promise.race([
+      model.generateContent({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          maxOutputTokens: 120, // 🔥 CRITICAL (prevents timeout)
+          temperature: 0.6,
+        },
+      }),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("TIMEOUT")), 8000) // 🔥 HARD LIMIT
+      ),
+    ]);
 
-  return response.text();
+    return result.response.text();
+  } catch (error) {
+    console.log("⚠️ AI fallback triggered:", error.message);
+
+    // 🔥 INSTANT FALLBACK (NO WAIT)
+    return `
+Edge: ${teamA}
+Reason: Higher WR (${stats[teamA]?.winRate}) vs ${teamB}
+
+Players: ${safePlayers[0]?.player || "N/A"}
+Impact: ${safePlayers[0]?.impactScore || "-"}
+
+Matchup: Balanced
+Reason: No strong dominance
+
+Venue: ${venueInsight?.type || "Neutral"}
+Effect: Moderate scoring
+
+Confidence: ${
+      trustScore > 70 ? "High" : trustScore > 50 ? "Medium" : "Low"
+    }
+Reason: Trust score ${trustScore}
+`;
+  }
 };
 
 module.exports = { generateExplanation };
