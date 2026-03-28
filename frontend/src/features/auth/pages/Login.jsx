@@ -4,7 +4,8 @@ import { useAuth } from '../AuthContext.jsx'
 import { useToast } from '@/shared/hooks/useToast.js'
 import Button from '@/shared/components/Button.jsx'
 import Input from '@/shared/components/Input.jsx'
-import { Activity, Mail, Lock, Eye, EyeOff } from 'lucide-react'
+import { StratEdgeMark, StratEdgeWordmark } from '@/shared/components/StratEdgeBrand.jsx'
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -72,17 +73,11 @@ export default function Login() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-4">
-            <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center glow-purple">
-              <Activity className="w-6 h-6 text-primary" />
-            </div>
+          <div className="inline-flex flex-col items-center gap-3 mb-2">
+            <StratEdgeMark className="w-14 h-14" />
+            <StratEdgeWordmark size="xl" className="block" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground">CricketAI</h1>
           <p className="text-muted-foreground mt-2">Sign in to your account</p>
-          <p className="text-sm text-muted-foreground mt-3 max-w-sm mx-auto">
-            After login, start on Match predictions: choose two teams and get win odds, stats, and optional
-            venue and player matchup from real IPL-style data.
-          </p>
         </div>
 
         {/* Login Form */}

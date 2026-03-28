@@ -8,6 +8,7 @@ import { TopPlayersCard } from './TopPlayersCard.jsx'
 import { PlayerBattleCard } from './PlayerBattleCard.jsx'
 import { VenueInsightCard } from './VenueInsightCard.jsx'
 import { getTeamLogo } from '@/shared/constants'
+import { safeText } from '@/shared/utils'
 import { Trophy, Sparkles, RefreshCw } from 'lucide-react'
 
 export default function PredictionResult({ 
@@ -25,6 +26,9 @@ export default function PredictionResult({
   // Determine winner
   const winner = probA > probB ? teamA : teamB
   const winProb = Math.max(probA, probB)
+  const teamALabel = safeText(teamA, 'Team A')
+  const teamBLabel = safeText(teamB, 'Team B')
+  const winnerLabel = safeText(winner, 'Winner')
   const teamALogo = getTeamLogo(teamA)
   const teamBLogo = getTeamLogo(teamB)
   const winnerLogo = getTeamLogo(winner)
@@ -45,13 +49,13 @@ export default function PredictionResult({
                   <CardTitle>Match Prediction</CardTitle>
                   <p className="text-sm text-muted-foreground">
                     <span className="inline-flex items-center gap-2">
-                      {teamALogo && <img src={teamALogo} alt={teamA} className="w-5 h-5 object-contain rounded-sm" />}
-                      {teamA}
+                      {teamALogo && <img src={teamALogo} alt={teamALabel} className="w-5 h-5 object-contain rounded-sm" />}
+                      {teamALabel}
                     </span>
                     {' vs '}
                     <span className="inline-flex items-center gap-2">
-                      {teamBLogo && <img src={teamBLogo} alt={teamB} className="w-5 h-5 object-contain rounded-sm" />}
-                      {teamB}
+                      {teamBLogo && <img src={teamBLogo} alt={teamBLabel} className="w-5 h-5 object-contain rounded-sm" />}
+                      {teamBLabel}
                     </span>
                   </p>
                 </div>
@@ -65,8 +69,8 @@ export default function PredictionResult({
             <div className="text-center py-4">
               <p className="text-sm text-muted-foreground mb-1">Predicted Winner</p>
               <h2 className="text-3xl font-bold text-foreground inline-flex items-center gap-3">
-                {winnerLogo && <img src={winnerLogo} alt={winner} className="w-10 h-10 object-contain rounded-sm" />}
-                {winner}
+                {winnerLogo && <img src={winnerLogo} alt={winnerLabel} className="w-10 h-10 object-contain rounded-sm" />}
+                {winnerLabel}
               </h2>
               <p className="text-lg text-primary font-medium">
                 {(winProb * 100).toFixed(1)}% Win Probability
@@ -75,8 +79,8 @@ export default function PredictionResult({
 
             {/* Win Probability Bar */}
             <WinProbabilityBar
-              teamA={teamA}
-              teamB={teamB}
+              teamA={teamALabel}
+              teamB={teamBLabel}
               probA={probA}
               probB={probB}
             />

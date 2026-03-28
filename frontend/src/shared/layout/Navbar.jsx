@@ -28,9 +28,6 @@ export default function Navbar() {
         {/* Where you are + what this page is for (sidebar is the main navigator) */}
         <div className="min-w-0 max-w-2xl">
           <p className="text-sm font-semibold text-foreground break-words">{navMeta.label}</p>
-          {navMeta.blurb ? (
-            <p className="text-xs text-muted-foreground break-words">{navMeta.blurb}</p>
-          ) : null}
         </div>
 
         {/* Right side */}
@@ -58,9 +55,7 @@ export default function Navbar() {
                   <p className="text-sm font-medium text-foreground break-all">
                     {user?.email || 'User'}
                   </p>
-                  <p className="text-xs text-muted-foreground">
-                    Cricket Analyst
-                  </p>
+                  <p className="text-xs text-muted-foreground">StratEdge</p>
                 </div>
                 <button
                   className="w-full px-4 py-2 flex items-center gap-3 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"

@@ -3,7 +3,7 @@ import { playerService } from '@/shared/services/api'
 import { useToast } from '@/shared/hooks/useToast'
 
 /** Bump when server fixes player/impact payloads so clients do not reuse stale empty lists. */
-const IMPACT_CACHE_VERSION = 2
+const IMPACT_CACHE_VERSION = 3
 const CACHE_DURATION = 300000
 let impactCache = {
   top: null,

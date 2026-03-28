@@ -1,10 +1,10 @@
 import Card, { CardHeader, CardTitle, CardContent } from '@/shared/components/Card.jsx'
 import Badge from '@/shared/components/Badge.jsx'
-import { cn, getInitials } from '@/shared/utils'
+import { cn, getInitials, isValidPlayerLabel } from '@/shared/utils'
 import { Star, TrendingUp, TrendingDown } from 'lucide-react'
 
 export function TopPlayersCard({ players = [] }) {
-  const topFive = players.slice(0, 5)
+  const topFive = players.filter((p) => isValidPlayerLabel(p?.player)).slice(0, 5)
 
   return (
     <Card>

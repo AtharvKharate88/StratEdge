@@ -20,14 +20,30 @@ export default function MetricCard({
       setDisplayValue(null)
       return
     }
-    if (typeof value !== 'number' || Number.isNaN(value)) {
-      setDisplayValue(value)
+
+    let num = value
+    if (typeof value === 'string') {
+      const t = value.trim()
+      if (!t || t.toLowerCase() === 'undefined') {
+        setDisplayValue(null)
+        return
+      }
+      const asNum = Number(t)
+      if (!Number.isFinite(asNum)) {
+        setDisplayValue(null)
+        return
+      }
+      num = asNum
+    }
+
+    if (typeof num !== 'number' || Number.isNaN(num)) {
+      setDisplayValue(null)
       return
     }
 
     const duration = 1000
     const steps = 60
-    const increment = value / steps
+    const increment = num / steps
     let current = 0
     let step = 0
 
@@ -35,10 +51,10 @@ export default function MetricCard({
       step++
       current += increment
       if (step >= steps) {
-        setDisplayValue(value)
+        setDisplayValue(num)
         clearInterval(timer)
       } else {
-        const isDecimal = Math.abs(value) < 100 && !Number.isInteger(value)
+        const isDecimal = Math.abs(num) < 100 && !Number.isInteger(num)
         setDisplayValue(isDecimal ? current : Math.floor(current))
       }
     }, duration / steps)
@@ -53,7 +69,10 @@ export default function MetricCard({
           <p className="text-sm text-muted-foreground mb-1">{title}</p>
           <div className="flex items-baseline gap-1">
             <span className="text-3xl font-bold text-foreground animate-count">
-              {displayValue === null || displayValue === undefined
+              {displayValue === null ||
+              displayValue === undefined ||
+              (typeof displayValue === 'string' &&
+                displayValue.trim().toLowerCase() === 'undefined')
                 ? '—'
                 : typeof displayValue === 'number'
                   ? Number.isFinite(displayValue)
@@ -61,7 +80,7 @@ export default function MetricCard({
                         maximumFractionDigits: 1,
                       })
                     : '—'
-                  : displayValue}
+                  : '—'}
             </span>
             {suffix &&
               displayValue !== null &&

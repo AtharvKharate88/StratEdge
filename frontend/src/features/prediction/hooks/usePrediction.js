@@ -2,6 +2,7 @@ import { useState, useCallback, useRef } from 'react'
 import { predictionService } from '@/shared/services/api'
 import { playerService } from '@/shared/services/api'
 import { useToast } from '@/shared/hooks/useToast'
+import { isValidPlayerLabel } from '@/shared/utils'
 
 function normalizePercentLike(value, fallback = 0) {
   const num = Number(value)
@@ -52,6 +53,17 @@ function normalizeTeamStats(stats = {}, teamA, teamB) {
   }
 }
 
+function sanitizeTopPlayers(list) {
+  if (!Array.isArray(list)) return []
+  return list.filter((row) => isValidPlayerLabel(row?.player))
+}
+
+function sanitizePlayerBattle(battle) {
+  if (!battle) return null
+  if (!isValidPlayerLabel(battle.batter) || !isValidPlayerLabel(battle.bowler)) return null
+  return battle
+}
+
 function normalizePredictionPayload(payload = {}) {
   const teamA = payload.teamA
   const teamB = payload.teamB
@@ -63,7 +75,8 @@ function normalizePredictionPayload(payload = {}) {
     probability: normalizeProbability(payload.probability, teamA, teamB),
     trustScore: normalizePercentLike(payload.trustScore, 0),
     stats: normalizeTeamStats(payload.stats, teamA, teamB),
-    topPlayers: Array.isArray(payload.topPlayers) ? payload.topPlayers : [],
+    topPlayers: sanitizeTopPlayers(payload.topPlayers),
+    playerBattle: sanitizePlayerBattle(payload.playerBattle),
   }
 }
 

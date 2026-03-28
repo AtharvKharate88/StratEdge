@@ -2,7 +2,9 @@ import { cn } from '@/shared/utils'
 import { Shield } from 'lucide-react'
 
 export function TrustScoreMeter({ score = 0 }) {
-  const percentage = Math.min(Math.max(score * 100, 0), 100)
+  const raw = Number(score)
+  const frac = Number.isFinite(raw) ? (raw > 1 ? raw / 100 : raw) : 0
+  const percentage = Math.min(Math.max(frac * 100, 0), 100)
   
   const getColor = () => {
     if (percentage >= 80) return 'text-green-500'

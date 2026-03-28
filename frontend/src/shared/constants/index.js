@@ -26,10 +26,10 @@ export const API_ENDPOINTS = {
 
 // Storage Keys
 export const STORAGE_KEYS = {
-  ACCESS_TOKEN: 'cricket_ai_access_token',
-  REFRESH_TOKEN: 'cricket_ai_refresh_token',
-  USER_ID: 'cricket_ai_user_id',
-  USER_EMAIL: 'cricket_ai_user_email',
+  ACCESS_TOKEN: 'stratedge_access_token',
+  REFRESH_TOKEN: 'stratedge_refresh_token',
+  USER_ID: 'stratedge_user_id',
+  USER_EMAIL: 'stratedge_user_email',
 }
 
 // Query Keys for caching

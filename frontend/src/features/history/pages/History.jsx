@@ -5,7 +5,7 @@ import Badge from '@/shared/components/Badge.jsx'
 import Button from '@/shared/components/Button.jsx'
 import Empty from '@/shared/components/Empty.jsx'
 import { SkeletonTable } from '@/shared/components/Skeleton.jsx'
-import { cn, formatDate, normalizeStoredProbability, normalizeStoredTrust } from '@/shared/utils'
+import { cn, formatDate, normalizeStoredProbability, normalizeStoredTrust, safeText } from '@/shared/utils'
 import { History as HistoryIcon, RefreshCw, TrendingUp, Shield } from 'lucide-react'
 
 export default function History() {
@@ -17,8 +17,8 @@ export default function History() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Your history</h1>
-          <p className="text-muted-foreground mt-1">
-            {count} prediction{count === 1 ? '' : 's'} you ran while signed in (not other users)
+          <p className="text-muted-foreground mt-1 text-sm">
+            {count} saved prediction{count === 1 ? '' : 's'}
           </p>
         </div>
         <Button variant="outline" onClick={refresh} disabled={isLoading}>
@@ -44,11 +44,9 @@ export default function History() {
               title="No predictions yet"
               description={
                 <span>
-                  Run a match prediction first on{' '}
                   <Link to="/dashboard" className="text-primary font-medium hover:underline">
                     Match predictions
                   </Link>
-                  . Each run is stored here when you are logged in.
                 </span>
               }
             />
@@ -69,7 +67,10 @@ export default function History() {
                   {history.map((item, index) => {
                     const probA = normalizeStoredProbability(item.probability?.[item.teamA])
                     const probB = normalizeStoredProbability(item.probability?.[item.teamB])
-                    const winner = probA > probB ? item.teamA : item.teamB
+                    const teamALabel = safeText(item.teamA, 'Team A')
+                    const teamBLabel = safeText(item.teamB, 'Team B')
+                    const winner =
+                      probA > probB ? teamALabel : teamBLabel
                     const winProb = Math.max(probA, probB)
                     const trustFrac = normalizeStoredTrust(item.trustScore)
 
@@ -81,9 +82,9 @@ export default function History() {
                       >
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-2">
-                            <span className="font-medium text-foreground">{item.teamA}</span>
+                            <span className="font-medium text-foreground">{teamALabel}</span>
                             <span className="text-muted-foreground">vs</span>
-                            <span className="font-medium text-foreground">{item.teamB}</span>
+                            <span className="font-medium text-foreground">{teamBLabel}</span>
                           </div>
                         </td>
                         <td className="py-4 px-4">

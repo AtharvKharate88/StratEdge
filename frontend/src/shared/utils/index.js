@@ -59,13 +59,29 @@ export function debounce(func, wait) {
   }
 }
 
+/** Player / label guard — blocks literal "undefined", NA, empty from API or bad CSV keys. */
+export function isValidPlayerLabel(name) {
+  if (name == null) return false
+  const s = String(name).trim()
+  return s.length > 0 && s.toLowerCase() !== 'undefined' && s.toUpperCase() !== 'NA'
+}
+
+/** Safe single-line UI text; never shows the word "undefined". */
+export function safeText(value, fallback = '—') {
+  if (value == null) return fallback
+  const s = String(value).trim()
+  if (!s || s.toLowerCase() === 'undefined') return fallback
+  return s
+}
+
 export function getInitials(name) {
-  return name
-    .split(' ')
-    .map((word) => word[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
+  if (!isValidPlayerLabel(name)) return '?'
+  const parts = String(name)
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+  const initials = parts.map((w) => w[0]).join('')
+  return initials.toUpperCase().slice(0, 2) || '?'
 }
 
 export function sleep(ms) {

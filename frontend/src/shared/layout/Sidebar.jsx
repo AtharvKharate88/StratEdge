@@ -1,15 +1,8 @@
 import { NavLink, useLocation } from 'react-router-dom'
 import { cn } from '@/shared/utils'
 import { PRIMARY_NAV } from '@/shared/constants/appNav'
-import {
-  Activity,
-  LayoutDashboard,
-  History,
-  Users,
-  MapPin,
-  ChevronLeft,
-  ChevronRight,
-} from 'lucide-react'
+import { StratEdgeMark, StratEdgeWordmark } from '@/shared/components/StratEdgeBrand.jsx'
+import { LayoutDashboard, History, Users, MapPin, ChevronLeft, ChevronRight } from 'lucide-react'
 
 const ICON_BY_PATH = {
   '/dashboard': LayoutDashboard,
@@ -36,15 +29,10 @@ export default function Sidebar({ collapsed, onCollapsedChange }) {
     >
       {/* Logo */}
       <div className="h-16 flex items-center gap-3 px-4 border-b border-border">
-        <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
-          <Activity className="w-5 h-5 text-primary" />
-        </div>
+        <StratEdgeMark className="w-10 h-10 shrink-0" />
         {!collapsed && (
           <div className="min-w-0">
-            <span className="text-lg font-bold text-foreground block leading-tight">CricketAI</span>
-            <span className="text-[10px] text-muted-foreground leading-tight block mt-0.5">
-              IPL-style match & player insights
-            </span>
+            <StratEdgeWordmark size="md" className="block leading-tight" />
           </div>
         )}
       </div>
@@ -57,7 +45,7 @@ export default function Sidebar({ collapsed, onCollapsedChange }) {
             <NavLink
               key={item.path}
               to={item.path}
-              title={item.blurb}
+              title={item.label}
               className={cn(
                 'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200',
                 'hover:bg-secondary',

@@ -1,12 +1,14 @@
 import Card, { CardHeader, CardTitle, CardContent } from '@/shared/components/Card.jsx'
 import Badge from '@/shared/components/Badge.jsx'
-import { cn, getInitials } from '@/shared/utils'
+import { cn, getInitials, safeText } from '@/shared/utils'
 import { Swords } from 'lucide-react'
 
 export function PlayerBattleCard({ battle }) {
   if (!battle) return null
 
   const { batter, bowler, runs, balls, dismissals, strikeRate, dataStatus, dominanceTag } = battle
+  const batterLabel = safeText(batter, 'Batter')
+  const bowlerLabel = safeText(bowler, 'Bowler')
 
   const getBadgeVariant = () => {
     if (dominanceTag === 'Batter Dominates') return 'success'
@@ -39,11 +41,11 @@ export function PlayerBattleCard({ battle }) {
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
                   <span className="text-sm font-bold text-primary">
-                    {getInitials(batter || 'BAT')}
+                    {getInitials(batterLabel)}
                   </span>
                 </div>
                 <div>
-                  <p className="font-medium text-foreground">{batter}</p>
+                  <p className="font-medium text-foreground">{batterLabel}</p>
                   <p className="text-xs text-muted-foreground">Batter</p>
                 </div>
               </div>
@@ -52,12 +54,12 @@ export function PlayerBattleCard({ battle }) {
               
               <div className="flex items-center gap-3">
                 <div>
-                  <p className="font-medium text-foreground text-right">{bowler}</p>
+                  <p className="font-medium text-foreground text-right">{bowlerLabel}</p>
                   <p className="text-xs text-muted-foreground text-right">Bowler</p>
                 </div>
                 <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center">
                   <span className="text-sm font-bold text-accent">
-                    {getInitials(bowler || 'BOW')}
+                    {getInitials(bowlerLabel)}
                   </span>
                 </div>
               </div>

@@ -51,11 +51,6 @@ export default function VenueInsights() {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-foreground">Venues</h1>
-        <p className="text-muted-foreground mt-1 max-w-2xl">
-          Look up a ground for typical first-innings scores, how many games the stats are from, and a
-          broad pitch tag. Pair this with a prediction when you selected the same venue under Advanced
-          options.
-        </p>
       </div>
 
       {/* Search Card */}

@@ -7,15 +7,9 @@ import Button from '@/shared/components/Button.jsx'
 import Select from '@/shared/components/Select.jsx'
 import { SkeletonTable, SkeletonCard } from '@/shared/components/Skeleton.jsx'
 import { PlayerBattleCard } from '@/features/prediction/components/PlayerBattleCard.jsx'
-import { cn, getInitials } from '@/shared/utils'
+import { cn, getInitials, isValidPlayerLabel } from '@/shared/utils'
 import { CRICKET_TEAMS, getTeamLogo } from '@/shared/constants'
 import { Star, TrendingUp, TrendingDown, Swords, RefreshCw, Users } from 'lucide-react'
-
-function isValidPlayerName(name) {
-  if (name == null) return false
-  const s = String(name).trim()
-  return s.length > 0 && s.toLowerCase() !== 'undefined' && s.toUpperCase() !== 'NA'
-}
 
 export default function PlayerAnalytics() {
   const { players, isLoading: impactLoading, refresh: refreshImpact } = usePlayerImpact(200)
@@ -48,7 +42,7 @@ export default function PlayerAnalytics() {
     setSelectedBowler('')
   }, [battleTeamB])
 
-  const impactRows = players.filter((p) => isValidPlayerName(p?.player))
+  const impactRows = players.filter((p) => isValidPlayerLabel(p?.player))
 
   const teamOptions = CRICKET_TEAMS.map((team) => ({
     value: team,

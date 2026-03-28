@@ -52,9 +52,6 @@ export default function Dashboard() {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-foreground">Match predictions</h1>
-        <p className="text-muted-foreground mt-1 max-w-2xl text-sm">
-          Choose two teams and run a prediction. Use Advanced options for venue or a batter vs bowler.
-        </p>
       </div>
 
       {/* Quick Stats — loaded from API */}

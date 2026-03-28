@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { playerService } from '@/shared/services/api'
+import { isValidPlayerLabel } from '@/shared/utils'
 
 const AppContext = createContext(null)
 
@@ -79,11 +80,7 @@ export function AppProvider({ children }) {
 
         const apiPlayers = Array.isArray(response?.data?.data) ? response.data.data : []
         const normalized = apiPlayers
-          .filter((p) => {
-            if (!p?.player) return false
-            const s = String(p.player).trim()
-            return s.length > 0 && s.toLowerCase() !== 'undefined' && s.toUpperCase() !== 'NA'
-          })
+          .filter((p) => isValidPlayerLabel(p?.player))
           .map((player) => ({
           ...player,
           name: player.player,
