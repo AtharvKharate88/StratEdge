@@ -2,7 +2,7 @@ const { Prediction } = require("../models/Prediction");
 const asyncHandler = require("../middleware/asyncHandler");
 
 const getHistory = asyncHandler(async (req, res) => {
-<<<<<<< Updated upstream
+  // Check authentication
   if (!req.userId) {
     return res.status(401).json({
       success: false,
@@ -10,14 +10,10 @@ const getHistory = asyncHandler(async (req, res) => {
     });
   }
 
-  const predictions = await Prediction.find({ userId: req.userId })
-=======
-  const predictions = await Prediction.find({ user: req.userId })
->>>>>>> Stashed changes
-    .sort({ createdAt: -1 })
-    .limit(50)
-    .lean();
+  // Fetch predictions for the logged-in user
+  const predictions = await Prediction.find({ userId: req.userId });
 
+  // Send response
   res.status(200).json({
     success: true,
     count: predictions.length,
