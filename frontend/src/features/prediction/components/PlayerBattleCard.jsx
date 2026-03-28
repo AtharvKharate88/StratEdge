@@ -9,6 +9,10 @@ export function PlayerBattleCard({ battle }) {
   const { batter, bowler, runs, balls, dismissals, strikeRate, dataStatus, dominanceTag } = battle
   const batterLabel = safeText(batter, 'Batter')
   const bowlerLabel = safeText(bowler, 'Bowler')
+  const strikeRateNum = Number(strikeRate)
+  const strikeRateDisplay = Number.isFinite(strikeRateNum)
+    ? strikeRateNum.toFixed(1)
+    : '—'
 
   const getBadgeVariant = () => {
     if (dominanceTag === 'Batter Dominates') return 'success'
@@ -87,7 +91,7 @@ export function PlayerBattleCard({ battle }) {
                 <p className="text-xs text-muted-foreground">Dismissals</p>
               </div>
               <div className="p-3 rounded-lg bg-secondary/30">
-                <p className="text-xl font-bold text-foreground">{strikeRate?.toFixed(1) || '-'}</p>
+                <p className="text-xl font-bold text-foreground">{strikeRateDisplay}</p>
                 <p className="text-xs text-muted-foreground">SR</p>
               </div>
             </div>
