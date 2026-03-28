@@ -4,7 +4,7 @@ import { useAuth } from '../AuthContext.jsx'
 import { useToast } from '@/shared/hooks/useToast.js'
 import Button from '@/shared/components/Button.jsx'
 import Input from '@/shared/components/Input.jsx'
-import { StratEdgeMark, StratEdgeWordmark } from '@/shared/components/StratEdgeBrand.jsx'
+import { StratEdgeMark } from '@/shared/components/StratEdgeBrand.jsx'
 import { Mail, Lock, Eye, EyeOff, Check } from 'lucide-react'
 
 export default function Signup() {
@@ -81,8 +81,7 @@ export default function Signup() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex flex-col items-center gap-3 mb-2">
-            <StratEdgeMark className="w-14 h-14" />
-            <StratEdgeWordmark size="xl" className="block" />
+            <StratEdgeMark className="!h-auto !max-w-[min(100%,320px)] w-full" />
           </div>
           <p className="text-muted-foreground mt-2">Create your account</p>
         </div>

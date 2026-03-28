@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom'
 import { cn } from '@/shared/utils'
 import { PRIMARY_NAV } from '@/shared/constants/appNav'
-import { StratEdgeMark, StratEdgeWordmark } from '@/shared/components/StratEdgeBrand.jsx'
+import { StratEdgeMark } from '@/shared/components/StratEdgeBrand.jsx'
 import { LayoutDashboard, History, Users, MapPin, ChevronLeft, ChevronRight } from 'lucide-react'
 
 const ICON_BY_PATH = {
@@ -28,13 +28,13 @@ export default function Sidebar({ collapsed, onCollapsedChange }) {
       )}
     >
       {/* Logo */}
-      <div className="h-16 flex items-center gap-3 px-4 border-b border-border">
-        <StratEdgeMark className="w-10 h-10 shrink-0" />
-        {!collapsed && (
-          <div className="min-w-0">
-            <StratEdgeWordmark size="md" className="block leading-tight" />
-          </div>
+      <div
+        className={cn(
+          'h-16 flex items-center border-b border-border px-3',
+          collapsed ? 'justify-center' : 'justify-start gap-2'
         )}
+      >
+        <StratEdgeMark compact={collapsed} className={cn(!collapsed && 'min-w-0 flex-1')} />
       </div>
 
       {/* Navigation */}
