@@ -1,5 +1,6 @@
 const { getDeliveriesData } = require("../utils/globalStore");
 const { getPlayerBattleStats } = require("../utils/playerBattle");
+const { strikerName, bowlerName } = require("../utils/deliveryNormalize");
 
 const resolvePlayerName = (inputName, players) => {
   if (!inputName) return inputName;
@@ -37,8 +38,8 @@ const playerBattle = (req, res) => {
     }
 
     const deliveries = getDeliveriesData();
-    const batters = [...new Set(deliveries.map((d) => d.batter).filter(Boolean))];
-    const bowlers = [...new Set(deliveries.map((d) => d.bowler).filter(Boolean))];
+    const batters = [...new Set(deliveries.map((d) => strikerName(d)).filter(Boolean))];
+    const bowlers = [...new Set(deliveries.map((d) => bowlerName(d)).filter(Boolean))];
 
     const resolvedBatter = resolvePlayerName(batter, batters);
     const resolvedBowler = resolvePlayerName(bowler, bowlers);

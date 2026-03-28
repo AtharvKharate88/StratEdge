@@ -1,3 +1,5 @@
+const { strikerName } = require("./deliveryNormalize");
+
 const calculatePlayerImpact = (deliveries) => {
     const playerStats = {};
 
@@ -10,8 +12,7 @@ const calculatePlayerImpact = (deliveries) => {
     const lastYearIds = new Set(uniqueMatchIds.slice(-2 * bucketSize, -bucketSize));
   
     deliveries.forEach((ball) => {
-      const player = ball.batter;
-      const name = player != null ? String(player).trim() : "";
+      const name = strikerName(ball);
       if (!name || name === "NA" || name.toLowerCase() === "undefined") {
         return;
       }

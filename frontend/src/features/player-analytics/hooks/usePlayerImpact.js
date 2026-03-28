@@ -2,17 +2,26 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { playerService } from '@/shared/services/api'
 import { useToast } from '@/shared/hooks/useToast'
 
-let impactCache = { top: null, data: null, count: 0, ts: 0 }
+/** Bump when server fixes player/impact payloads so clients do not reuse stale empty lists. */
+const IMPACT_CACHE_VERSION = 2
 const CACHE_DURATION = 300000
+let impactCache = {
+  top: null,
+  data: null,
+  count: 0,
+  ts: 0,
+  v: IMPACT_CACHE_VERSION,
+}
 
 export function usePlayerImpact(top = 10) {
-  const [players, setPlayers] = useState(
-    impactCache.top === top ? impactCache.data || [] : []
-  )
-  const [count, setCount] = useState(
-    impactCache.top === top ? impactCache.count || 0 : 0
-  )
-  const [isLoading, setIsLoading] = useState(!(impactCache.top === top && impactCache.data))
+  const cacheOk =
+    impactCache.v === IMPACT_CACHE_VERSION &&
+    impactCache.top === top &&
+    Array.isArray(impactCache.data)
+
+  const [players, setPlayers] = useState(cacheOk ? impactCache.data : [])
+  const [count, setCount] = useState(cacheOk ? impactCache.count || 0 : 0)
+  const [isLoading, setIsLoading] = useState(!cacheOk)
   const [error, setError] = useState(null)
   const { toast } = useToast()
   const toastRef = useRef(toast)
@@ -21,6 +30,7 @@ export function usePlayerImpact(top = 10) {
   const fetchImpact = useCallback(async (forceRefresh = false) => {
     if (
       !forceRefresh &&
+      impactCache.v === IMPACT_CACHE_VERSION &&
       impactCache.top === top &&
       impactCache.data &&
       Date.now() - impactCache.ts < CACHE_DURATION
@@ -46,7 +56,7 @@ export function usePlayerImpact(top = 10) {
             })
           : []
         const c = response.data.count ?? data.length
-        impactCache = { top, data, count: c, ts: Date.now() }
+        impactCache = { top, data, count: c, ts: Date.now(), v: IMPACT_CACHE_VERSION }
         setPlayers(data)
         setCount(c)
       }

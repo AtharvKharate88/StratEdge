@@ -135,7 +135,7 @@ export default function PlayerAnalytics() {
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{player.player}</p>
+                      <p className="text-sm font-medium text-foreground break-words">{player.player}</p>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <span>{player.matches || 0} matches</span>
                         <span>|</span>

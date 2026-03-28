@@ -45,13 +45,13 @@ export function TeamStatsComparison({ teamA, teamB, stats }) {
         <div className="space-y-4">
           {/* Header */}
           <div className="grid grid-cols-3 gap-4 pb-3 border-b border-border">
-            <div className="text-sm font-medium text-primary truncate inline-flex items-center gap-2">
+            <div className="text-sm font-medium text-primary min-w-0 inline-flex items-center gap-2">
               {teamALogo && <img src={teamALogo} alt={teamA} className="w-5 h-5 object-contain rounded-sm shrink-0" />}
-              <span className="truncate">{teamA}</span>
+              <span className="break-words leading-tight">{teamA}</span>
             </div>
             <div className="text-sm text-muted-foreground text-center">Stat</div>
-            <div className="text-sm font-medium text-accent text-right truncate inline-flex items-center justify-end gap-2">
-              <span className="truncate">{teamB}</span>
+            <div className="text-sm font-medium text-accent text-right min-w-0 inline-flex items-center justify-end gap-2">
+              <span className="break-words leading-tight text-end">{teamB}</span>
               {teamBLogo && <img src={teamBLogo} alt={teamB} className="w-5 h-5 object-contain rounded-sm shrink-0" />}
             </div>
           </div>

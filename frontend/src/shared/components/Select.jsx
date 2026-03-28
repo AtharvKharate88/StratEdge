@@ -95,14 +95,14 @@ export default function Select({
             className="w-6 h-6 object-contain rounded-sm shrink-0"
           />
         )}
-        <span className={cn('flex-1 truncate', !value && 'text-muted-foreground')}>
+        <span className={cn('flex-1 min-w-0 text-left break-words', !value && 'text-muted-foreground')}>
           {selectedLabel}
         </span>
         <ChevronDown className={cn('w-4 h-4 text-muted-foreground transition-transform', isOpen && 'rotate-180')} />
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 py-1 glass-card rounded-lg border border-border shadow-xl max-h-60 overflow-hidden">
+        <div className="absolute z-50 w-full mt-1 py-1 glass-card rounded-lg border border-border shadow-xl max-h-60">
           {searchable && (
             <div className="p-2 border-b border-border">
               <div className="relative">

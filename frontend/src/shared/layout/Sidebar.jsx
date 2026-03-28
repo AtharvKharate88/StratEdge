@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { cn } from '@/shared/utils'
 import { PRIMARY_NAV } from '@/shared/constants/appNav'
@@ -24,8 +23,7 @@ const navItems = PRIMARY_NAV.map((item) => ({
   icon: ICON_BY_PATH[item.path],
 }))
 
-export default function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false)
+export default function Sidebar({ collapsed, onCollapsedChange }) {
   const location = useLocation()
 
   return (
@@ -79,7 +77,8 @@ export default function Sidebar() {
       {/* Collapse Toggle */}
       <div className="p-4 border-t border-border">
         <button
-          onClick={() => setCollapsed(!collapsed)}
+          type="button"
+          onClick={() => onCollapsedChange?.(!collapsed)}
           className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors"
         >
           {collapsed ? (

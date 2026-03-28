@@ -1,22 +1,18 @@
+const { strikerName, bowlerName } = require("./deliveryNormalize");
+
 const getPlayerBattleStats = (batter, bowler, deliveries) => {
   let runs = 0;
   let balls = 0;
   let dismissals = 0;
 
   deliveries.forEach((ball) => {
-    if (
-      ball.batter === batter &&
-      ball.bowler === bowler
-    ) {
+    if (strikerName(ball) === batter && bowlerName(ball) === bowler) {
       balls++;
 
       runs += Number(ball.batsman_runs || 0);
 
-      // dismissal check
-      if (
-        ball.player_dismissed === batter &&
-        ball.is_wicket === "1"
-      ) {
+      const out = String(ball.player_dismissed || "").trim();
+      if (out && out === batter) {
         dismissals++;
       }
     }

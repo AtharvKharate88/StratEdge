@@ -26,10 +26,10 @@ export default function Navbar() {
     <header className="h-16 glass border-b border-border sticky top-0 z-30">
       <div className="h-full px-6 flex items-center justify-between">
         {/* Where you are + what this page is for (sidebar is the main navigator) */}
-        <div className="min-w-0 max-w-xl">
-          <p className="text-sm font-semibold text-foreground truncate">{navMeta.label}</p>
+        <div className="min-w-0 max-w-2xl">
+          <p className="text-sm font-semibold text-foreground break-words">{navMeta.label}</p>
           {navMeta.blurb ? (
-            <p className="text-xs text-muted-foreground truncate">{navMeta.blurb}</p>
+            <p className="text-xs text-muted-foreground break-words">{navMeta.blurb}</p>
           ) : null}
         </div>
 
@@ -55,7 +55,7 @@ export default function Navbar() {
             {showDropdown && (
               <div className="absolute right-0 mt-2 w-56 glass-card rounded-lg border border-border shadow-xl py-1 animate-fade-in">
                 <div className="px-4 py-3 border-b border-border">
-                  <p className="text-sm font-medium text-foreground truncate">
+                  <p className="text-sm font-medium text-foreground break-all">
                     {user?.email || 'User'}
                   </p>
                   <p className="text-xs text-muted-foreground">

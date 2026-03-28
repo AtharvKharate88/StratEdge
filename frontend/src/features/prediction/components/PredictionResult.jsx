@@ -32,7 +32,7 @@ export default function PredictionResult({
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Main Prediction Card */}
-      <Card glow className="relative overflow-hidden">
+      <Card glow className="relative rounded-xl">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
         <div className="relative">
           <CardHeader>

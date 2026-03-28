@@ -1,4 +1,5 @@
 const { allCsvSpellingsForFranchise } = require("./teamFranchise");
+const { strikerName, bowlerName } = require("./deliveryNormalize");
 
 const PLAYING_XI_SIZE = 11;
 
@@ -39,16 +40,16 @@ function collectTopPlayers(deliveries, aliasSet, role, seasonIds) {
     if (role === "batter") {
       const bt = d.batting_team;
       if (!aliasSet.has(bt)) continue;
-      const batter = d.batter;
+      const batter = strikerName(d);
       if (!isValidBallName(batter)) continue;
-      const key = String(batter).trim();
+      const key = batter;
       counts[key] = (counts[key] || 0) + 1;
     } else {
       const bwt = d.bowling_team;
       if (!aliasSet.has(bwt)) continue;
-      const bowler = d.bowler;
+      const bowler = bowlerName(d);
       if (!isValidBallName(bowler)) continue;
-      const key = String(bowler).trim();
+      const key = bowler;
       counts[key] = (counts[key] || 0) + 1;
     }
   }

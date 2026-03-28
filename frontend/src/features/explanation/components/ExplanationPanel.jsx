@@ -84,7 +84,7 @@ export default function ExplanationPanel({ prediction, isOpen, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-fade-in">
-      <Card className="w-full max-w-2xl max-h-[80vh] overflow-hidden">
+      <Card className="w-full max-w-2xl max-h-[80vh] flex flex-col">
         <CardHeader className="flex-row items-center justify-between border-b border-border pb-4">
           <CardTitle className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" />
@@ -98,7 +98,7 @@ export default function ExplanationPanel({ prediction, isOpen, onClose }) {
           </button>
         </CardHeader>
 
-        <CardContent className="overflow-y-auto max-h-[60vh] pt-4">
+        <CardContent className="overflow-y-auto max-h-[min(60vh,70dvh)] pt-4 min-h-0 flex-1 overscroll-contain">
           {isLoading && (
             <div className="space-y-4">
               <Skeleton className="h-4 w-full" />
