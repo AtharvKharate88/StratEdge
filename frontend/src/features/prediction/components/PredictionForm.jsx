@@ -148,50 +148,72 @@ export default function PredictionForm({
               />
             </div>
 
-            {/* Player Battle — batters from Team A XI, bowlers from Team B XI (current season window) */}
+            {/* Player Battle — requires Team A + Team B from main form */}
             <div>
               <h4 className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
                 <Swords className="w-4 h-4 text-primary" />
                 Player Battle (Optional)
               </h4>
-              <p className="text-xs text-muted-foreground mb-3">
-                Batters from Team A and bowlers from Team B (top 11 in the latest match window from
-                data). Select both teams above first.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs text-muted-foreground mb-2">
-                    Batter (Team A)
-                    {batterSeason?.matchCount != null && (
-                      <span className="text-[10px]"> · {batterSeason.matchCount} matches in window</span>
-                    )}
-                  </label>
-                  <Select
-                    value={batter}
-                    onChange={setBatter}
-                    options={batterOptions}
-                    placeholder={teamA ? 'Select batter from Team A' : 'Select Team A first'}
-                    searchable
-                    disabled={isLoading || !teamA || squadALoading}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-muted-foreground mb-2">
-                    Bowler (Team B)
-                    {bowlerSeason?.matchCount != null && (
-                      <span className="text-[10px]"> · {bowlerSeason.matchCount} matches in window</span>
-                    )}
-                  </label>
-                  <Select
-                    value={bowler}
-                    onChange={setBowler}
-                    options={bowlerOptions}
-                    placeholder={teamB ? 'Select bowler from Team B' : 'Select Team B first'}
-                    searchable
-                    disabled={isLoading || !teamB || squadBLoading}
-                  />
-                </div>
-              </div>
+              {!teamA || !teamB ? (
+                <p className="text-xs text-muted-foreground">
+                  Select Team A and Team B above first.
+                </p>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-2">
+                        Batter ({teamA})
+                        {batterSeason?.matchCount != null && (
+                          <span className="text-[10px]">
+                            {' '}
+                            · {batterSeason.matchCount} matches{batterSeason?.usedFallback ? ' (all-time)' : ''}
+                          </span>
+                        )}
+                      </label>
+                      <Select
+                        value={batter}
+                        onChange={setBatter}
+                        options={batterOptions}
+                        placeholder={
+                          squadALoading
+                            ? 'Loading batters…'
+                            : batterOptions.length
+                              ? 'Select batter'
+                              : 'No batters found for this team'
+                        }
+                        searchable
+                        disabled={isLoading || squadALoading}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-2">
+                        Bowler ({teamB})
+                        {bowlerSeason?.matchCount != null && (
+                          <span className="text-[10px]">
+                            {' '}
+                            · {bowlerSeason.matchCount} matches{bowlerSeason?.usedFallback ? ' (all-time)' : ''}
+                          </span>
+                        )}
+                      </label>
+                      <Select
+                        value={bowler}
+                        onChange={setBowler}
+                        options={bowlerOptions}
+                        placeholder={
+                          squadBLoading
+                            ? 'Loading bowlers…'
+                            : bowlerOptions.length
+                              ? 'Select bowler'
+                              : 'No bowlers found for this team'
+                        }
+                        searchable
+                        disabled={isLoading || squadBLoading}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}

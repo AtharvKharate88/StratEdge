@@ -44,8 +44,27 @@ function csvTeamAliasesForSelection(canonicalTeam) {
   return group.length ? group : [canonicalTeam]
 }
 
+/**
+ * Union of known aliases plus every batting/bowling_team spelling in the CSV
+ * that matches the same franchise (handles one-off spellings not in FRANCHISE_GROUPS).
+ */
+function allCsvSpellingsForFranchise(canonicalTeam, deliveries) {
+  const set = new Set(csvTeamAliasesForSelection(canonicalTeam))
+  if (!Array.isArray(deliveries)) return set
+  const pool = new Set()
+  for (const d of deliveries) {
+    if (d.batting_team) pool.add(d.batting_team)
+    if (d.bowling_team) pool.add(d.bowling_team)
+  }
+  for (const t of pool) {
+    if (t && teamsSameFranchise(canonicalTeam, t)) set.add(t)
+  }
+  return set
+}
+
 module.exports = {
   teamsSameFranchise,
   resolveTeamKeyInStats,
   csvTeamAliasesForSelection,
+  allCsvSpellingsForFranchise,
 }

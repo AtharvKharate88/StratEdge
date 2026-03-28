@@ -52,9 +52,8 @@ export default function Dashboard() {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-foreground">Match predictions</h1>
-        <p className="text-muted-foreground mt-1 max-w-3xl">
-          Pick two IPL teams and get a modeled win probability plus supporting numbers. Optional extras:
-          venue context, a batter-vs-bowler matchup from recent data, and an AI-written explanation.
+        <p className="text-muted-foreground mt-1 max-w-2xl text-sm">
+          Choose two teams and run a prediction. Use Advanced options for venue or a batter vs bowler.
         </p>
       </div>
 
@@ -125,12 +124,10 @@ export default function Dashboard() {
                 <Activity className="w-8 h-8 text-primary" />
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-2">
-                Your output will show up here
+                Prediction appears here
               </h3>
-              <p className="text-muted-foreground max-w-lg mx-auto text-sm leading-relaxed">
-                Use the form on the left: submit two teams first. You will get win odds, a side-by-side
-                team stats panel, top impact players from the model, and—if you used Advanced Options—venue
-                and player battle cards.
+              <p className="text-muted-foreground max-w-md mx-auto text-sm">
+                Submit the form with Team A and Team B.
               </p>
             </div>
           )}

@@ -1,4 +1,4 @@
-const { csvTeamAliasesForSelection } = require("./teamFranchise");
+const { allCsvSpellingsForFranchise } = require("./teamFranchise");
 
 const PLAYING_XI_SIZE = 11;
 
@@ -23,8 +23,39 @@ function countMapTopN(map, n) {
     .map(([name]) => name);
 }
 
+function isValidBallName(name) {
+  if (name == null || name === "NA") return false;
+  const s = String(name).trim();
+  return s.length > 0 && s.toLowerCase() !== "undefined";
+}
+
+function collectTopPlayers(deliveries, aliasSet, role, seasonIds) {
+  const counts = {};
+  for (const d of deliveries) {
+    if (seasonIds) {
+      const mid = Number(d.match_id);
+      if (!seasonIds.has(mid)) continue;
+    }
+    if (role === "batter") {
+      const bt = d.batting_team;
+      if (!aliasSet.has(bt)) continue;
+      const batter = d.batter;
+      if (!isValidBallName(batter)) continue;
+      const key = String(batter).trim();
+      counts[key] = (counts[key] || 0) + 1;
+    } else {
+      const bwt = d.bowling_team;
+      if (!aliasSet.has(bwt)) continue;
+      const bowler = d.bowler;
+      if (!isValidBallName(bowler)) continue;
+      const key = String(bowler).trim();
+      counts[key] = (counts[key] || 0) + 1;
+    }
+  }
+  return countMapTopN(counts, PLAYING_XI_SIZE);
+}
+
 /**
- * Current "season" window uses the same recency bucket as player impact (latest ~20% of matches).
  * @param {'batter'|'bowler'} role
  */
 function getTeamSquadForSeason(deliveries, teamName, role) {
@@ -34,44 +65,33 @@ function getTeamSquadForSeason(deliveries, teamName, role) {
       season: {
         label: "Current window (latest matches)",
         matchCount: 0,
+        totalMatchesInDataset: 0,
+        usedFallback: false,
       },
     };
   }
 
+  const aliasSet = allCsvSpellingsForFranchise(teamName, deliveries);
   const { ids: seasonIds, totalMatches, seasonMatchCount } =
     getCurrentSeasonMatchIdSet(deliveries);
-  const aliases = csvTeamAliasesForSelection(teamName);
-  const aliasSet = new Set(aliases);
 
-  const counts = {};
+  let players = collectTopPlayers(deliveries, aliasSet, role, seasonIds);
+  let usedFallback = false;
+  let label = "Current season (latest match window)";
 
-  for (const d of deliveries) {
-    const mid = Number(d.match_id);
-    if (!seasonIds.has(mid)) continue;
-
-    if (role === "batter") {
-      const bt = d.batting_team;
-      if (!aliasSet.has(bt)) continue;
-      const batter = d.batter;
-      if (!batter || batter === "NA") continue;
-      counts[batter] = (counts[batter] || 0) + 1;
-    } else {
-      const bwt = d.bowling_team;
-      if (!aliasSet.has(bwt)) continue;
-      const bowler = d.bowler;
-      if (!bowler || bowler === "NA") continue;
-      counts[bowler] = (counts[bowler] || 0) + 1;
-    }
+  if (players.length === 0) {
+    players = collectTopPlayers(deliveries, aliasSet, role, null);
+    usedFallback = true;
+    label = "Full dataset (recent window had no rows for this team)";
   }
-
-  const players = countMapTopN(counts, PLAYING_XI_SIZE);
 
   return {
     players,
     season: {
-      label: "Current season (latest match window)",
-      matchCount: seasonMatchCount,
+      label,
+      matchCount: usedFallback ? totalMatches : seasonMatchCount,
       totalMatchesInDataset: totalMatches,
+      usedFallback,
     },
   };
 }
@@ -79,4 +99,4 @@ function getTeamSquadForSeason(deliveries, teamName, role) {
 module.exports = {
   getTeamSquadForSeason,
   PLAYING_XI_SIZE,
-}
+};

@@ -1,14 +1,15 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { usePlayerImpact } from '../hooks/usePlayerImpact'
 import { usePlayerBattle } from '../hooks/usePlayerBattle'
+import { useTeamSquad } from '@/features/prediction/hooks/useTeamSquad'
 import Card, { CardHeader, CardTitle, CardContent } from '@/shared/components/Card.jsx'
 import Button from '@/shared/components/Button.jsx'
 import Select from '@/shared/components/Select.jsx'
-import Badge from '@/shared/components/Badge.jsx'
 import { SkeletonTable, SkeletonCard } from '@/shared/components/Skeleton.jsx'
 import { PlayerBattleCard } from '@/features/prediction/components/PlayerBattleCard.jsx'
 import { cn, getInitials } from '@/shared/utils'
-import { Star, TrendingUp, TrendingDown, Swords, RefreshCw } from 'lucide-react'
+import { CRICKET_TEAMS, getTeamLogo } from '@/shared/constants'
+import { Star, TrendingUp, TrendingDown, Swords, RefreshCw, Users } from 'lucide-react'
 
 function isValidPlayerName(name) {
   if (name == null) return false
@@ -20,14 +21,42 @@ export default function PlayerAnalytics() {
   const { players, isLoading: impactLoading, refresh: refreshImpact } = usePlayerImpact(200)
   const { battle, isLoading: battleLoading, fetchBattle, reset: resetBattle } = usePlayerBattle()
 
-  const impactRows = players.filter((p) => isValidPlayerName(p?.player))
-
-  const datasetPlayerNames = impactRows.map((player) => player.player)
-  const batterOptions = Array.from(new Set(datasetPlayerNames))
-  const bowlerOptions = Array.from(new Set(datasetPlayerNames))
-  
+  const [battleTeamA, setBattleTeamA] = useState('')
+  const [battleTeamB, setBattleTeamB] = useState('')
   const [selectedBatter, setSelectedBatter] = useState('')
   const [selectedBowler, setSelectedBowler] = useState('')
+
+  const {
+    players: batterOptions,
+    isLoading: squadALoading,
+    season: batterSeason,
+  } = useTeamSquad(battleTeamA, 'batter')
+  const {
+    players: bowlerOptions,
+    isLoading: squadBLoading,
+    season: bowlerSeason,
+  } = useTeamSquad(battleTeamB, 'bowler')
+
+  const teamsReady =
+    Boolean(battleTeamA && battleTeamB && battleTeamA !== battleTeamB)
+
+  useEffect(() => {
+    setSelectedBatter('')
+  }, [battleTeamA])
+
+  useEffect(() => {
+    setSelectedBowler('')
+  }, [battleTeamB])
+
+  const impactRows = players.filter((p) => isValidPlayerName(p?.player))
+
+  const teamOptions = CRICKET_TEAMS.map((team) => ({
+    value: team,
+    label: team,
+    icon: getTeamLogo(team),
+  }))
+  const teamsForB = teamOptions.filter((t) => t.value !== battleTeamA)
+  const teamsForA = teamOptions.filter((t) => t.value !== battleTeamB)
 
   const handleBattleSearch = () => {
     if (selectedBatter && selectedBowler) {
@@ -41,17 +70,21 @@ export default function PlayerAnalytics() {
     resetBattle()
   }
 
+  const handleResetAll = () => {
+    setBattleTeamA('')
+    setBattleTeamB('')
+    setSelectedBatter('')
+    setSelectedBowler('')
+    resetBattle()
+  }
+
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Player analytics</h1>
-          <p className="text-muted-foreground mt-1 max-w-2xl">
-            Secondary toolbox: who is driving impact in the dataset, and how any batter has fared against
-            any bowler. Use{' '}
-            <span className="text-foreground/90">Match predictions</span> when your main goal is a match
-            winner and team context.
+          <p className="text-muted-foreground mt-1 max-w-xl text-sm">
+            Player impact ranks and a head-to-head comparison.
           </p>
         </div>
         <Button variant="outline" onClick={refreshImpact} disabled={impactLoading}>
@@ -61,7 +94,6 @@ export default function PlayerAnalytics() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Impact Leaderboard */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -73,9 +105,7 @@ export default function PlayerAnalytics() {
             {impactLoading && <SkeletonTable rows={5} />}
 
             {!impactLoading && impactRows.length === 0 && (
-              <p className="text-sm text-muted-foreground py-4 text-center">
-                No player impact rows to show. Refresh after the backend has loaded match data.
-              </p>
+              <p className="text-sm text-muted-foreground py-4 text-center">No data yet. Try Refresh.</p>
             )}
 
             {!impactLoading && impactRows.length > 0 && (
@@ -86,29 +116,26 @@ export default function PlayerAnalytics() {
                     className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors animate-fade-in"
                     style={{ animationDelay: `${index * 50}ms` }}
                   >
-                    {/* Rank */}
-                    <div className={cn(
-                      'w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0',
-                      index === 0 && 'bg-yellow-500/20 text-yellow-500',
-                      index === 1 && 'bg-gray-400/20 text-gray-400',
-                      index === 2 && 'bg-orange-600/20 text-orange-600',
-                      index > 2 && 'bg-secondary text-muted-foreground'
-                    )}>
+                    <div
+                      className={cn(
+                        'w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0',
+                        index === 0 && 'bg-yellow-500/20 text-yellow-500',
+                        index === 1 && 'bg-gray-400/20 text-gray-400',
+                        index === 2 && 'bg-orange-600/20 text-orange-600',
+                        index > 2 && 'bg-secondary text-muted-foreground'
+                      )}
+                    >
                       {index + 1}
                     </div>
 
-                    {/* Avatar */}
                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                       <span className="text-sm font-medium text-primary">
                         {getInitials(player.player || 'Player')}
                       </span>
                     </div>
 
-                    {/* Info */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">
-                        {player.player}
-                      </p>
+                      <p className="text-sm font-medium text-foreground truncate">{player.player}</p>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <span>{player.matches || 0} matches</span>
                         <span>|</span>
@@ -116,7 +143,6 @@ export default function PlayerAnalytics() {
                       </div>
                     </div>
 
-                    {/* Impact & Form */}
                     <div className="text-right shrink-0">
                       <div className="text-lg font-bold text-primary">
                         {player.impactScore?.toFixed(1) || '-'}
@@ -142,7 +168,6 @@ export default function PlayerAnalytics() {
           </CardContent>
         </Card>
 
-        {/* Player Battle Lookup */}
         <div className="space-y-6">
           <Card>
             <CardHeader>
@@ -152,36 +177,110 @@ export default function PlayerAnalytics() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Batter
-                  </label>
-                  <Select
-                    value={selectedBatter}
-                    onChange={setSelectedBatter}
-                    options={batterOptions}
-                    placeholder="Select batter"
-                    searchable
-                  />
+              <div>
+                <h4 className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+                  <Users className="w-4 h-4 text-primary" />
+                  Teams
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-2">Batter&apos;s team</label>
+                    <Select
+                      value={battleTeamA}
+                      onChange={setBattleTeamA}
+                      options={teamsForA}
+                      placeholder="Select team (batters)"
+                      searchable
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-2">Bowler&apos;s team</label>
+                    <Select
+                      value={battleTeamB}
+                      onChange={setBattleTeamB}
+                      options={teamsForB}
+                      placeholder="Select team (bowlers)"
+                      searchable
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Bowler
-                  </label>
-                  <Select
-                    value={selectedBowler}
-                    onChange={setSelectedBowler}
-                    options={bowlerOptions}
-                    placeholder="Select bowler"
-                    searchable
-                  />
-                </div>
+                {battleTeamA && battleTeamB && battleTeamA === battleTeamB && (
+                  <p className="text-xs text-destructive mt-2">Choose two different teams.</p>
+                )}
               </div>
+
+              {!teamsReady ? (
+                <p className="text-sm text-muted-foreground border border-dashed border-border rounded-lg p-4">
+                  Pick two different teams, then choose players.
+                </p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      Batter ({battleTeamA})
+                      {batterSeason?.matchCount != null && (
+                        <span className="text-xs font-normal text-muted-foreground">
+                          {' '}
+                          · {batterSeason.matchCount} matches
+                          {batterSeason?.usedFallback ? ' · all-time fallback' : ''}
+                        </span>
+                      )}
+                    </label>
+                    <Select
+                      value={selectedBatter}
+                      onChange={setSelectedBatter}
+                      options={batterOptions}
+                      placeholder={
+                        squadALoading
+                          ? 'Loading batters…'
+                          : batterOptions.length
+                            ? 'Select batter'
+                            : 'No batters for this team'
+                      }
+                      searchable
+                      disabled={squadALoading}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      Bowler ({battleTeamB})
+                      {bowlerSeason?.matchCount != null && (
+                        <span className="text-xs font-normal text-muted-foreground">
+                          {' '}
+                          · {bowlerSeason.matchCount} matches
+                          {bowlerSeason?.usedFallback ? ' · all-time fallback' : ''}
+                        </span>
+                      )}
+                    </label>
+                    <Select
+                      value={selectedBowler}
+                      onChange={setSelectedBowler}
+                      options={bowlerOptions}
+                      placeholder={
+                        squadBLoading
+                          ? 'Loading bowlers…'
+                          : bowlerOptions.length
+                            ? 'Select bowler'
+                            : 'No bowlers for this team'
+                      }
+                      searchable
+                      disabled={squadBLoading}
+                    />
+                  </div>
+                </div>
+              )}
+
               <div className="flex gap-3">
                 <Button
                   onClick={handleBattleSearch}
-                  disabled={!selectedBatter || !selectedBowler || battleLoading}
+                  disabled={
+                    !teamsReady ||
+                    !selectedBatter ||
+                    !selectedBowler ||
+                    battleLoading ||
+                    squadALoading ||
+                    squadBLoading
+                  }
                   isLoading={battleLoading}
                   className="flex-1"
                 >
@@ -189,26 +288,24 @@ export default function PlayerAnalytics() {
                   Compare
                 </Button>
                 <Button variant="outline" onClick={handleReset}>
-                  Reset
+                  Clear players
+                </Button>
+                <Button variant="outline" onClick={handleResetAll}>
+                  Reset all
                 </Button>
               </div>
             </CardContent>
           </Card>
 
-          {/* Battle Result */}
           {battleLoading && <SkeletonCard />}
-          
-          {!battleLoading && battle && (
-            <PlayerBattleCard battle={battle} />
-          )}
+
+          {!battleLoading && battle && <PlayerBattleCard battle={battle} />}
 
           {!battleLoading && !battle && selectedBatter && selectedBowler && (
             <Card>
               <CardContent className="py-8 text-center">
                 <Swords className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">
-                  Click Compare to see the head-to-head stats
-                </p>
+                <p className="text-muted-foreground">Click Compare to see the head-to-head stats</p>
               </CardContent>
             </Card>
           )}
