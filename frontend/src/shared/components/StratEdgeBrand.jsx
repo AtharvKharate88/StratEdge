@@ -1,27 +1,26 @@
 import { cn } from '@/shared/utils'
+import { StratEdgeLogoSvg } from './StratEdgeLogoSvg.jsx'
 
 /**
- * Official StratEdge wordmark (PNG). Theme: soft violet + cyan glow on dark UI.
- * `compact` = smaller width for collapsed sidebar / tight spots.
+ * StratEdge brand lockup (SVG). Scales with layout; theme glow matches app chrome.
  */
 export function StratEdgeMark({ className, compact = false }) {
   return (
-    <img
-      src="/stratedge-logo.png"
-      alt="StratEdge"
-      decoding="async"
+    <div
       className={cn(
-        'object-contain object-left select-none',
-        'rounded-lg bg-black/40 ring-1 ring-violet-500/35',
-        'shadow-[0_0_24px_-4px_rgba(139,92,246,0.45),0_0_20px_-8px_rgba(34,211,238,0.25)]',
-        compact ? 'h-9 max-w-[5.75rem]' : 'h-11 w-full max-w-[220px]',
+        'select-none rounded-lg px-1 py-0.5',
+        'ring-1 ring-violet-500/25',
+        'shadow-[0_0_28px_-6px_rgba(139,92,246,0.35),0_0_24px_-10px_rgba(34,211,238,0.2)]',
+        compact ? 'max-w-[7.25rem]' : 'w-full max-w-full',
         className
       )}
-    />
+    >
+      <StratEdgeLogoSvg compact={compact} />
+    </div>
   )
 }
 
-/** Optional text wordmark when no image is desired (e.g. tiny footer). */
+/** Plain text wordmark when SVG is not used. */
 export function StratEdgeWordmark({ className, size = 'lg' }) {
   const sizes = { sm: 'text-base', md: 'text-xl', lg: 'text-lg', xl: 'text-3xl' }
   return (
